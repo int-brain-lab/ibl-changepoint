@@ -24,3 +24,16 @@ Nopts = 1;                      % Perform only one optimization (but you should 
 params = fit_model(model_name,data,Nopts);
 plot_fit(params,data);
 ```
+
+The available models are:
+- `psychofun`: simple psychometric function fit (separately for each probability level).
+- `omniscient`: "omniscient" Bayesian observer that knows the true stimulus probability in each block.
+- `changepoint`: change-point Bayesian observer that tracks the stimulus probability from trial to trial.
+
+Specific features can be added to the base observer models, separated by subscripts:
+- `_lapse`: adds a probability `lapse_rate` of a random response with equal probability.
+- `_biasedlapse`: as above, but lapses have a `lapse_bias` probability of responding "Left" (`lapse_bias = 0.5` is unbiased lapse).
+- `_softmax`: adds a softmax probabilistic step to the decision rule.
+- `_runlength`: adds flexibility to run-length related parameters (`changepoint` observer only).
+- `_freesym`: adds flexibility to the a-priori block probabilities for biased blocks, assuming symmetry (`changepoint` observer only).
+
