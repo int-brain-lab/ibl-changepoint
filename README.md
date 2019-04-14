@@ -9,7 +9,7 @@ For the moment, the code is only available in Matlab.
 2. Add the base folder of the repository (which contains the `ibl_change_add2path.m` file) to your Matlab path. 
    **Warning:** It is not recommended to permanently add the entire repository tree to your Matlab path, since this might cause function name clashes with other projects.
 3. If you do not already have them, install *Bayesian Adaptive Direct Search* (BADS; an optimization toolbox) from [here](https://github.com/lacerbi/bads) and *Variational Bayesian Monte Carlo* (VBMC; an approximate posterior inference toolbox) from [here](https://github.com/lacerbi/vbmc).
-4. Download the IBL data for the exemplar mice to CSV files in the `data` folder using [this Python script](https://github.com/int-brain-lab/ibl-changepoint/blob/master/matlab/data/fetch_data.ipynb) (you will need IBL access credentials).
+4. Download the IBL data for the exemplar mice to CSV files in the `data` folder using [this Python script](https://github.com/int-brain-lab/ibl-changepoint/blob/master/data/fetch_data.ipynb) (you will need IBL access credentials).
 
 ### Basic overview
 
