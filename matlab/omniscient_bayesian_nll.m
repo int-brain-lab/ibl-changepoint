@@ -4,7 +4,7 @@ MIN_P = 1e-4;   % Minimum lapse/error probability
 
 %% Assign observer model parameters
 
-lambda = max(MIN_P,params.lambda);     % Minimum lapse to avoid numerical trouble
+lapse_rate = max(MIN_P,params.lapse_rate);     % Minimum lapse to avoid numerical trouble
 lapse_bias = params.lapse_bias;
 softmax_eta = params.softmax_eta;
 softmax_bias = params.softmax_bias;
@@ -26,7 +26,7 @@ logprior_odds = log(data.p_true./(1-data.p_true));
 dhat = bsxfun(@plus, loglikeL - loglikeR, logprior_odds);
 
 % Compute negative log likelihood and probability of responding L
-[nLL,PChatL] = get_responses_nLL(dhat,softmax_eta,softmax_bias,lambda,lapse_bias,W,data.resp_obs);
+[nLL,PChatL] = get_responses_nLL(dhat,softmax_eta,softmax_bias,lapse_rate,lapse_bias,W,data.resp_obs);
 
 if nargout > 1
     output.resp_model = PChatL;    

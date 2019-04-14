@@ -58,7 +58,7 @@ else
     end
 
     % Lapse rate
-    params.lambda = 0;
+    params.lapse_rate = 0;
     
     % Lapse bias (probability of responding "Left" on a lapse)
     params.lapse_bias = 0.5;
@@ -71,12 +71,12 @@ else
     params.softmax_bias = 0;      % No bias by default
     
     if contains(model_name,'_biasedlapse')
-        params.names{end+1} = 'lambda';
+        params.names{end+1} = 'lapse_rate';
         params.names{end+1} = 'lapse_bias';
         extra_features{end+1} = 'biased lapse';
         
     elseif contains(model_name,'_lapse')
-        params.names{end+1} = 'lambda';
+        params.names{end+1} = 'lapse_rate';
         extra_features{end+1} = 'lapse';
     end
     
