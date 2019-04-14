@@ -146,11 +146,10 @@ else
             params.names{end+1} = 'runlength_tau';
             params.names{end+1} = 'runlength_min';
             extra_features{end+1} = 'runlengths';
-        elseif contains(model_name,'_runlengthfreesym')
-            params.names{end+1} = 'runlength_tau';
-            params.names{end+1} = 'runlength_min';
+        end
+        if contains(model_name,'_freesym')
             params.names{end+1} = 'prob_low';
-            extra_features{end+1} = 'runlengths & symmetric probs';
+            extra_features{end+1} = 'symmetric probs';
         end
     end
     

@@ -76,3 +76,13 @@ for iMouse = 1:numel(example_mice)
     save([example_mice{iMouse} '_bias_shift.mat'],'bias_shift','psy_model_mle','gendata_mle','train_models','test_models');
 end
 
+% Make plots
+close all;
+subplot(2,1,1);
+bias_shift = plot_predicted_bias_shift([],0);
+subplot(2,1,2);
+plot_predicted_bias_shift([],1);
+mypath = which('savefigure.m');
+savefigure([fileparts(mypath) filesep() 'bias_shift']);
+close all;
+plot_predicted_psychometric_shift(example_mice);
