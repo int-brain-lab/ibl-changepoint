@@ -49,9 +49,10 @@ Note that in addition to obtaining maximum-likelihood estimates of the parameter
 
 ### Troubleshooting
 
-The IBL change-point toolbox is work in progress, so for any question please drop me an email at <luigi.acerbi@unige.ch>.
+The IBL change-point toolbox is work in progress, and I plan to extend the documentation where needed.
+In the meanwhile, for any question please drop me an email at <luigi.acerbi@unige.ch>.
 
-#### License
+### License
 
-The IBL change-point toolbox is released under the terms of the MIT license.
+The IBL change-point toolbox is released under the terms of the [MIT license](https://github.com/int-brain-lab/ibl-changepoint/blob/master/LICENSE).
 
