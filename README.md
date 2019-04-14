@@ -43,7 +43,8 @@ If a dataset name is suffixed with `_unbiased`, only unbiased (50/50) blocks are
 
 ### Predicting optimal bias shifts
 
-The `fit_all_unbiased.m` script contains the entire pipeline to fit psychometric functions and several "omniscient" models to the unbiased data only, in order to make predictions about the mice behavior in the full sessions that include change-point blocks. 
+The `fit_all_unbiased.m` script contains the entire pipeline to fit psychometric functions and several "omniscient" models to the unbiased data only, in order to make predictions about the mice behavior in the full sessions that include change-point blocks.
+The `scripts` folder contains bash scripts to launch several jobs on a computer cluster (which uses the Slurm job manager).
 
 Note that in addition to obtaining maximum-likelihood estimates of the parameters (via [BADS](https://github.com/lacerbi/bads)), we also compute (approximate) Bayesian posteriors using [VBMC](https://github.com/lacerbi/vbmc).
 
