@@ -37,3 +37,21 @@ Specific features can be added to the base observer models, separated by subscri
 - `_runlength`: adds flexibility to run-length related parameters (`changepoint` observer only).
 - `_freesym`: adds flexibility to the a-priori block probabilities for biased blocks, assuming symmetry (`changepoint` observer only).
 
+Multiple datasets and models can be fitted in batch by using the `batch_model_fit.m` function.
+
+If a dataset name is suffixed with `_unbiased`, only unbiased (50/50) blocks are loaded.
+
+### Predicting optimal bias shifts
+
+The `fit_all_unbiased.m` script contains the entire pipeline to fit psychometric functions and several "omniscient" models to the unbiased data only, in order to make predictions about the mice behavior in the full sessions that include change-point blocks. 
+
+Note that in addition to obtaining maximum-likelihood estimates of the parameters (via [BADS](https://github.com/lacerbi/bads)), we also compute (approximate) Bayesian posteriors using [VBMC](https://github.com/lacerbi/vbmc).
+
+### Troubleshooting
+
+The IBL change-point toolbox is work in progress, so for any question please drop me an email at <luigi.acerbi@unige.ch>.
+
+#### License
+
+The IBL change-point toolbox is released under the terms of the MIT license.
+
