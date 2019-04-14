@@ -70,22 +70,23 @@ else
     params.softmax_eta = Inf;     % Deterministic choice, take argmax
     params.softmax_bias = 0;      % No bias by default
     
-    if contains(model_name,'biasedlapse')
+    if contains(model_name,'_biasedlapse')
         params.names{end+1} = 'lambda';
         params.names{end+1} = 'lapse_bias';
-        extra_features{end+1} = 'biased lapse';    
-    elseif ~contains(model_name,'nolapse')
+        extra_features{end+1} = 'biased lapse';
+        
+    elseif contains(model_name,'_lapse')
         params.names{end+1} = 'lambda';
         extra_features{end+1} = 'lapse';
     end
     
-    if ~contains(model_name,'ideal')
+    if contains(model_name,'_softmax')
         params.names{end+1} = 'softmax_eta'; 
         params.names{end+1} = 'softmax_bias';
         extra_features{end+1} = 'softmax';
     end
     
-    if contains(model_name,'attention')
+    if contains(model_name,'_attention')
         params.names{end+1} = 'attention_factor';
         extra_features{end+1} = 'attention';
     end    
@@ -141,11 +142,11 @@ else
         % Beta hyperprior on observations after changepoint (bias towards L/R)
         params.beta_hyp = [0,0];      % No bias by default
         
-        if contains(model_name,'runlength')
+        if contains(model_name,'_runlength')
             params.names{end+1} = 'runlength_tau';
             params.names{end+1} = 'runlength_min';
             extra_features{end+1} = 'runlengths';
-        elseif contains(model_name,'changepoint_free_sym')
+        elseif contains(model_name,'_runlengthfreesym')
             params.names{end+1} = 'runlength_tau';
             params.names{end+1} = 'runlength_min';
             params.names{end+1} = 'prob_low';
@@ -166,19 +167,14 @@ else
         params.model_desc = [params.model_desc,extra_desc];        
     end    
     
-    % Assign starting fits (should be improved)
+    % Assign starting fits
     
     if strcmp(base_model,'changepoint')
-        switch model_name
-            case 'changepoint'
-                params.model_startingfit = 'omniscient';
-            case 'changepoint_ideal'
-            case 'changepoint_runlength'
-                params.model_startingfit = 'omniscient';
-            case 'changepoint_free_sym'
-                params.model_startingfit = 'omniscient';
-        end        
-        
+        params.model_startingfit = 'omniscient';
+        if numel(model_name) > numel(base_model)
+            params.model_startingfit = ...
+                [params.model_startingfit, model_name(numel(base_model)+1:end)];
+        end
     end
 
 end

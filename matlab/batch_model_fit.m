@@ -15,11 +15,11 @@ close all;
 % Models to be fitted
 if isempty(model_names)
     model_names{1} = 'psychofun';
-    model_names{2} = 'omniscient_ideal_nolapse';
-    model_names{3} = 'omniscient_ideal';
-    model_names{4} = 'omniscient';
-    % model_names{5} = 'changepoint_runlength';
-    % model_names{6} = 'changepoint_free_sym';
+    model_names{2} = 'omniscient';
+    model_names{3} = 'omniscient_lapse';
+    model_names{4} = 'omniscient_biasedlapse';
+    % model_names{5} = 'changepoint_biasedlapse_runlength';
+    % model_names{6} = 'changepoint_biasedlapse_runlengthfreesym';
 elseif ischar(model_names)
     model_names = {model_names};
 end

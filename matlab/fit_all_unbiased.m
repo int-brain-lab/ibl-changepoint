@@ -7,16 +7,16 @@ clear train_models test_models;
 Nsamples = 100;  % Approximate posterior samples for model predictions
 
 train_models{1} = 'psychofun';
-train_models{2} = 'omniscient_ideal_nolapse';
-train_models{3} = 'omniscient_ideal';
-train_models{4} = 'omniscient_ideal_biasedlapse';
-% train_models{5} = 'omniscient';
+train_models{2} = 'omniscient';
+train_models{3} = 'omniscient_lapse';
+train_models{4} = 'omniscient_biasedlapse';
+% train_models{5} = 'omniscient_softmax';
 
 test_models{1} = [];
-test_models{2} = 'changepoint_ideal_nolapse';
-test_models{3} = 'changepoint_ideal';
-test_models{4} = 'changepoint_ideal_biasedlapse';
-% test_models{5} = 'changepoint';
+test_models{2} = 'changepoint';
+test_models{3} = 'changepoint_lapse';
+test_models{4} = 'changepoint_biasedlapse';
+% test_models{5} = 'changepoint_softmax';
 
 for iMouse = 1:numel(example_mice)
     
