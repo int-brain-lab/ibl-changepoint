@@ -11,10 +11,12 @@
 % Luigi Acerbi 2019
 
 repo_path = fileparts(mfilename('fullpath'));
+addpath([repo_path filesep 'data']);
+
 matlab_path = [repo_path filesep 'matlab'];
 addpath(matlab_path);
 
-folders_list = {'data','figures','fits','plotfuns','scripts','utils'};
+folders_list = {'figures','fits','plotfuns','scripts','utils'};
 
 for iFolder = 1:numel(folders_list)
     folder_path = [matlab_path filesep folders_list{iFolder}];
