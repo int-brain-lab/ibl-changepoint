@@ -1,0 +1,78 @@
+if ~exist('example_mice','var') || isempty(example_mice)
+    example_mice = {'CSHL_005','CSHL_007','IBL-T1','IBL-T4','ibl_witten_04','ibl_witten_05'};
+end
+
+clear train_models test_models;
+
+Nsamples = 100;  % Approximate posterior samples for model predictions
+
+train_models{1} = 'psychofun';
+train_models{2} = 'omniscient_ideal_nolapse';
+train_models{3} = 'omniscient_ideal';
+train_models{4} = 'omniscient_ideal_biasedlapse';
+% train_models{5} = 'omniscient';
+
+test_models{1} = [];
+test_models{2} = 'changepoint_ideal_nolapse';
+test_models{3} = 'changepoint_ideal';
+test_models{4} = 'changepoint_ideal_biasedlapse';
+% test_models{5} = 'changepoint';
+
+for iMouse = 1:numel(example_mice)
+    
+    % Fit psychometric curves for all blocks
+    modelfits_psy = batch_model_fit('psychofun',example_mice{iMouse},3,1,0);
+    idx = find(cellfun(@(p) strcmp(p.model_name,'psychofun'),modelfits_psy.params),1);
+    psy_data = modelfits_psy.params{idx};
+    bias_shift.data(iMouse) = psy_data.psycho_mu(3) - psy_data.psycho_mu(1);
+    
+    % Fit all models on unbiased blocks only
+    modelfits = batch_model_fit(train_models,[example_mice{iMouse} '_unbiased'],5,1,0);
+    
+    % Simulate change-point models on all blocks w/ parameters from unbiased blocks
+    data_all = read_data_from_csv(example_mice{iMouse});    % Get mouse data
+    
+    psy_model_mle = []; gendata_mle = [];
+    
+    for iModel = 1:numel(test_models)
+        if isempty(test_models{iModel}); continue; end
+        
+        params = params_new(test_models{iModel},data_all);
+        idx = find(cellfun(@(p) strcmp(p.model_name,train_models{iModel}),modelfits.params),1);
+
+        % First sample is maximum-likelihood estimate (MLE)
+        theta_rnd = modelfits.params{idx}.theta;
+        
+        % Generate additional samples from the approximate posterior
+        theta_rnd = [theta_rnd; ...
+            get_posterior_samples(modelfits.params{idx},Nsamples)];
+                
+        theta_rnd
+        
+        for iSample = 1:size(theta_rnd,1)
+            
+            iSample
+            
+            % Setup parameter struct for changepoint model
+            params1 = setup_params(theta_rnd(iSample,:),params);
+
+            % Generate data
+            nreps = 10;
+            gendata = model_gendata(params1,data_all,nreps);
+
+            % Fit psychometric curve to model-generated data
+            psy_model = fit_model('psychofun',gendata,1,0,1);
+            bias_shift.(test_models{iModel})(iMouse,iSample) = ...
+                psy_model.psycho_mu(3) - psy_model.psycho_mu(1);
+            
+            % Store maximum-likelihood psychometric function and data
+            if iSample == 1
+                gendata_mle{iModel} = gendata;
+                psy_model_mle{iModel} = psy_model;
+            end
+        end
+    end
+    
+    save([example_mice{iMouse} '_bias_shift.mat'],'bias_shift','psy_model_mle','gendata_mle','train_models','test_models');
+end
+

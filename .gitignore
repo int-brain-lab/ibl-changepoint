@@ -1,0 +1,10 @@
+*.mexw64
+*.mexa64
+*.mexmaci64
+*.asv
+*.csv
+*.fig
+*.mat
+*.png
+*.svg
+.DS_Store
