@@ -32,7 +32,7 @@ PARAMS=$(awk "NR==${IID} {print;exit}" ${INPUTFILE})
 echo ${PARAMS} ${VERBOSE}
 
 cat<<EOF | matlab -nodisplay
-ibl_change_add2path
+ibl_changepoint_add2path
 cd('${WORKDIR}');
 example_mice={'$PARAMS'}
 fit_all_unbiased

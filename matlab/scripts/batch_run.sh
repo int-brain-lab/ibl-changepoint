@@ -1,5 +1,5 @@
 #!/bin/bash
-PROJECT="ibl-behavior-analysis"
+PROJECT="ibl-changepoint"
 SHORTNAME=IBL
 BASEDIR="${HOME}/${PROJECT}/matlab"
 SOURCEDIR="${BASEDIR}/"
@@ -10,7 +10,7 @@ RUN="change"
 INPUTFILE="${BASEDIR}/scripts/joblist_${RUN}.txt"
 MAXID=$(sed -n $= ${INPUTFILE})
 
-RUNTIME=8:00:00
+RUNTIME=24:00:00
 MAXRT=NaN
 VERBOSE=0
 MAXFUNMULT="[]"
