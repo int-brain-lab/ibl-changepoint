@@ -4,7 +4,9 @@ function y = msplinetrapezpdf(x,a,b,c,d)
 % a < b < c < d
 
 y = zeros(size(x));
-nf = c - b + 0.5*(d - c + b - a);   % Normalization factor
+% Normalization factor
+% nf = c - b + 0.5*(d - c + b - a);
+nf = 0.5*(c - b + d - a);
 
 for ii = 1:size(x,2)
     

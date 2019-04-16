@@ -95,7 +95,7 @@ if vbmc_flag
         x0 = params.theta;
 
         vbmc_opts = vbmc('defaults');
-        vbmc_opts.Plot = 'on';
+        % vbmc_opts.Plot = 'on';
 %         vbmc_opts.SearchCacheFrac = 0.1;
 %         vbmc_opts.HPDSearchFrac = 0.9;
 %         vbmc_opts.HeavyTailSearchFrac = 0;
