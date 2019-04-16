@@ -4,9 +4,9 @@ function y = mtrapezpdf(x,a,b,c,d)
 % a < b < c < d
 
 y = zeros(size(x));
+nf = 0.5 * (d - a + c - b) .* (b - a);
 
 for ii = 1:size(x,2)
-    nf = 0.5 * (d - a + c - b) .* (b - a);
     
     idx = x(:,ii) >= a(ii) & x(:,ii) < b(ii);
     y(idx,ii) = (x(idx,ii) - a(ii)) / nf(ii);
@@ -19,10 +19,4 @@ for ii = 1:size(x,2)
 end
 
 y = prod(y,2);
-
-
-
-
-
-
 

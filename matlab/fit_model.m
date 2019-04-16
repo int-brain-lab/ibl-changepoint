@@ -107,8 +107,8 @@ if vbmc_flag
 %         vbmc_opts.Kwarmup = 2;
 %         vbmc_opts.NSgpMaxWarmup = 3;
 
-        % Assume trapezoidal prior over finite box
-        logprior = @(x) log(mtrapezpdf(x,bounds.LB,bounds.PLB,bounds.PUB,bounds.UB));
+        % Assume smoothed trapezoidal prior over finite box
+        logprior = @(x) log(msplinetrapezpdf(x,bounds.LB,bounds.PLB,bounds.PUB,bounds.UB));
         
         for iOpt = 1:ceil(Nopts/2)
             [vp,elbo,elbo_sd,exitflag,output] = ...
