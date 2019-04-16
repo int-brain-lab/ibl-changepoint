@@ -3,10 +3,10 @@ function y = mquadpdf(x,a,b,c,d)
 
 % a < b < c < d
 
-y = zeros(size(x));
+y = zeros(size(x));    
+nf = c - b + (b - a + d - c)*2/3;
 
 for ii = 1:size(x,2)
-    nf = c - b + (b - a + d - c)*2/3;
     
     idx = x(:,ii) >= a(ii) & x(:,ii) < b(ii);
     y(idx,ii) = (1 - ((x(idx,ii) - b(ii)) / (b(ii) - a(ii))).^2) / nf(ii);

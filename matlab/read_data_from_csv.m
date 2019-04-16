@@ -2,7 +2,7 @@ function data = read_data_from_csv(filename)
 %READ_DATA_FROM_CSV Read from file and return DATA struct.
 
 mypath = fileparts(mfilename('fullpath'));
-addpath([mypath filesep 'data']);
+addpath([mypath filesep '..' filesep 'data']);
 
 % Check if loading only unbiased trials
 idx = strfind(filename,'_unbiased');

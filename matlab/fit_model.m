@@ -95,12 +95,21 @@ if vbmc_flag
         x0 = params.theta;
 
         vbmc_opts = vbmc('defaults');
-        % vbmc_opts.Plot = 'on';
+        vbmc_opts.Plot = 'on';
+%         vbmc_opts.SearchCacheFrac = 0.1;
+%         vbmc_opts.HPDSearchFrac = 0.9;
+%         vbmc_opts.HeavyTailSearchFrac = 0;
+%         vbmc_opts.MVNSearchFrac = 0;
+%         vbmc_opts.SearchAcqFcn = @vbmc_acqpropregt;
+%         vbmc_opts.StopWarmupThresh = 0.1;
+%         vbmc_opts.TolStableWarmup = 5;
+%         vbmc_opts.FastWarmup = true;
+%         vbmc_opts.Kwarmup = 2;
+%         vbmc_opts.NSgpMaxWarmup = 3;
 
         % Assume trapezoidal prior over finite box
         logprior = @(x) log(mtrapezpdf(x,bounds.LB,bounds.PLB,bounds.PUB,bounds.UB));
-        % logprior = @(x) log(mquadpdf(x,bounds.LB,bounds.PLB,bounds.PUB,bounds.UB));
-
+        
         for iOpt = 1:ceil(Nopts/2)
             [vp,elbo,elbo_sd,exitflag,output] = ...
                 vbmc(@(x_) -nllfun(x_,params,data)+logprior(x_), ...

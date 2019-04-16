@@ -14,11 +14,6 @@ if numel(example_mice) > 1
    return;
 end
 
-test_models{1} = [];
-test_models{2} = 'changepoint-ideal-nolapse';
-test_models{3} = 'changepoint-ideal';
-test_models{4} = 'changepoint-ideal-biasedlapse';
-
 plotrows = 2;
 plotcols = 2;
 
@@ -40,7 +35,9 @@ for iModel = 1:4
         temp = load([mouse_name '_bias_shift.mat']);
         data = temp.gendata_mle{iModel};
         params = temp.psy_model_mle{iModel};
-        title_string = [test_models{iModel} ' simulated data + psychometric fit'];
+        test_model = temp.test_models{iModel};
+        test_model(test_model == '_') = '-';
+        title_string = [test_model ' (simulated data + psychometric fit)'];
         % Plot data and psychometric curve
         plot_fit(true_data,true_params,title_string,0);
         plot_fit(data,params,title_string,0);
