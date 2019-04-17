@@ -101,6 +101,8 @@ if vbmc_flag
         vbmc_opts.NSgpMaxMain = 0;
         vbmc_opts.GPStochasticStepsize = true;
         vbmc_opts.WarmupNoImproThreshold = 20 + 5*numel(x0);
+        vbmc_opts.TolStableExceptions = 2;
+        vbmc_opts.TolStableIters = 10;
         
 %         w.SearchCacheFrac = 0.1; w.HPDSearchFrac = 0.9; w.HeavyTailSearchFrac = 0; w.MVNSearchFrac = 0; w.SearchAcqFcn = @vbmc_acqpropregt; w.StopWarmupThresh = 0.1; w.SearchCMAESVPInit = false;
 %         vbmc_opts.WarmupOptions = w; vbmc_opts.TolStableWarmup = 5; vbmc_opts.FastWarmup = true; vbmc_opts.NSgpMaxWarmup = 8;
