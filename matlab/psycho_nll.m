@@ -11,17 +11,15 @@ PChatL = zeros(size(data.resp_obs));
 for i_prob = 1:numel(p_true_vec)
     psycho_mu = params.psycho_mu(i_prob);
     psycho_sigma = params.psycho_sigma(i_prob);
+    psycho_gammalo = params.psycho_gammalo(i_prob);
+    psycho_gammahi = params.psycho_gammahi(i_prob);
     
     idx_trial = data.p_true == p_true_vec(i_prob);
     cc = data.signed_contrasts(idx_trial);
     
     % Psychometric curve for choosing RIGHT
-    p = 0.5*(1 + erf((cc-psycho_mu)/(sqrt(2)*psycho_sigma)));
-    
-    % Add left (low) and right (high) lapses
-    p = params.psycho_gammalo(i_prob) + ...
-        max(0,(1 - params.psycho_gammalo(i_prob) - params.psycho_gammahi(i_prob)))*p;
-        
+    p = psychofun(cc,[psycho_mu,psycho_sigma,psycho_gammalo,psycho_gammahi]);
+            
     % Probability or choice LEFT is 1 - psychometric curve
     PChatL(idx_trial) = 1 - p;
 end

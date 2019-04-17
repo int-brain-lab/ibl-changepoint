@@ -24,6 +24,7 @@ for iMouse = 1:Nmice
     models = fields(temp.bias_shift)';
     for iModel = 1:numel(models)
         model_shift = temp.bias_shift.(models{iModel});
+        model_bias_prob = temp.bias_prob.(models{iModel}).MatchProbability;
         
         % Generate posterior over bias shift for the data
         if strcmp(models{iModel},'data') && numel(model_shift) == 1
@@ -33,6 +34,15 @@ for iMouse = 1:Nmice
             if ~isempty(theta_rnd)
                 sampled_shift = theta_rnd(:,3) - theta_rnd(:,1);            
                 model_shift = [model_shift,sampled_shift'];
+                
+                % Psychometric curves at zero contrast for biased blocks
+                sampled_bias_prob = zeros(1,Nsamples);
+                for iSample = 1:Nsamples
+                    pRblock = psychofun(0,[theta_rnd(iSample,1),theta_rnd(iSample,4),theta_rnd(iSample,7),theta_rnd(iSample,10)]);
+                    pLblock = psychofun(0,[theta_rnd(iSample,3),theta_rnd(iSample,6),theta_rnd(iSample,9),theta_rnd(iSample,12)]);
+                    sampled_bias_prob(iSample) = 0.5*(pLblock + 1 - pRblock);
+                end
+                model_bias_prob = [model_bias_prob,sampled_bias_prob];
             end
         end
         

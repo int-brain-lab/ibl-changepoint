@@ -65,6 +65,14 @@ for iMouse = 1:numel(example_mice)
             bias_shift.(test_models{iModel})(iMouse,iSample) = ...
                 psy_model.psycho_mu(3) - psy_model.psycho_mu(1);
             
+            % Psychometric curves at zero contrast for biased blocks
+            pRblock = psychofun(0,[psy_model.psycho_mu(1),psy_model.psycho_sigma(1),psy_model.psycho_gammalo(1),psy_model.psycho_gammahi(1)]);
+            pLblock = psychofun(0,[psy_model.psycho_mu(3),psy_model.psycho_sigma(3),psy_model.psycho_gammalo(3),psy_model.psycho_gammahi(3)]);
+            
+            bias_prob.(test_models{iModel}).RightBlock(iMouse,iSample) = pRblock;
+            bias_prob.(test_models{iModel}).LeftBlock(iMouse,iSample) = pLblock;
+            bias_prob.(test_models{iModel}).MatchProbability(iMouse,iSample) = 0.5*(pLblock + 1 - pRblock);
+                        
             % Store maximum-likelihood psychometric function and data
             if iSample == 1
                 gendata_mle{iModel} = gendata;
@@ -73,7 +81,7 @@ for iMouse = 1:numel(example_mice)
         end
     end
     
-    save([example_mice{iMouse} '_bias_shift.mat'],'bias_shift','psy_model_mle','gendata_mle','train_models','test_models');
+    save([example_mice{iMouse} '_bias_shift.mat'],'bias_shift','bias_prob','psy_model_mle','gendata_mle','train_models','test_models');
 end
 
 % Make plots

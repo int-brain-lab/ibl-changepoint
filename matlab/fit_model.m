@@ -89,24 +89,22 @@ if isempty(params) || refit_flag
 end
 
 if vbmc_flag
-    if ~isfield(params,'vbmc_fit') || isempty(params.vbmc_fit) || refit_flag
-    
+    if ~isfield(params,'vbmc_fit') || isempty(params.vbmc_fit) || refit_flag    
+        if isfield(params,'vbmc_fit'); params = rmfield(params,'vbmc_fit'); end
+        
         bounds = setup_params([],params);       % Get parameter bounds    
         x0 = params.theta;
 
         vbmc_opts = vbmc('defaults');
         % vbmc_opts.Plot = 'on';
-%         vbmc_opts.SearchCacheFrac = 0.1;
-%         vbmc_opts.HPDSearchFrac = 0.9;
-%         vbmc_opts.HeavyTailSearchFrac = 0;
-%         vbmc_opts.MVNSearchFrac = 0;
-%         vbmc_opts.SearchAcqFcn = @vbmc_acqpropregt;
-%         vbmc_opts.StopWarmupThresh = 0.1;
-%         vbmc_opts.TolStableWarmup = 5;
-%         vbmc_opts.FastWarmup = true;
-%         vbmc_opts.Kwarmup = 2;
-%         vbmc_opts.NSgpMaxWarmup = 3;
-
+        vbmc_opts.MaxFunEvals = 100 + 50*numel(x0);
+        vbmc_opts.NSgpMaxMain = 0;
+        vbmc_opts.GPStochasticStepsize = true;
+        vbmc_opts.WarmupNoImproThreshold = 20 + 5*numel(x0);
+        
+%         w.SearchCacheFrac = 0.1; w.HPDSearchFrac = 0.9; w.HeavyTailSearchFrac = 0; w.MVNSearchFrac = 0; w.SearchAcqFcn = @vbmc_acqpropregt; w.StopWarmupThresh = 0.1; w.SearchCMAESVPInit = false;
+%         vbmc_opts.WarmupOptions = w; vbmc_opts.TolStableWarmup = 5; vbmc_opts.FastWarmup = true; vbmc_opts.NSgpMaxWarmup = 8;
+        
         % Assume smoothed trapezoidal prior over finite box
         logprior = @(x) log(msplinetrapezpdf(x,bounds.LB,bounds.PLB,bounds.PUB,bounds.UB));
         
