@@ -4,7 +4,7 @@ end
 
 clear train_models test_models;
 
-Nsamples = 100;  % Approximate posterior samples for model predictions
+Nsamples = 20;  % Approximate posterior samples for model predictions
 
 train_models{1} = 'psychofun';
 train_models{2} = 'omniscient';
