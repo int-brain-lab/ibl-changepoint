@@ -1,4 +1,4 @@
-function [params,data] = fit_model(model_name,data,Nopts,vbmc_flag,refit_flag)
+function [params,data] = fit_model(model_name,data,Nopts,vbmc_flag,refit_flag,opt_init)
 %FIT_MODEL Fit model MODEL_NAME to dataset DATA.
 
 % # restarts for optimization procedure (maximum-likelihood estimation)
@@ -9,6 +9,16 @@ if nargin < 4 || isempty(vbmc_flag); vbmc_flag = false; end
 
 % Force refit even if fit already exists
 if nargin < 5 || isempty(refit_flag); refit_flag = false; end
+
+% Starting point(s) for the first fit
+if nargin < 6; opt_init = []; end
+if isstruct(opt_init); opt_init = {opt_init}; end
+if iscell(opt_init)
+    for iOpt = 1:numel(opt_init)
+        temp(iOpt,:) = opt_init{iOpt}.theta;
+    end
+    opt_init = temp;
+end
 
 if ischar(data)
     data = read_data_from_csv(data);   % Load data
@@ -69,14 +79,19 @@ if isempty(params) || refit_flag
     end
 
     for iOpt = 1:Nopts
-        if iOpt == 1
-            x0 = bounds.x0;
+        if size(opt_init,1) >= iOpt     % Use provided starting points
+            x0 = opt_init(iOpt,:);
         else
-            x0 = rand(1,numel(bounds.PLB)).*(bounds.PUB-bounds.PLB) + bounds.PLB;
+            if iOpt == 1
+                x0 = bounds.x0;
+            else
+                x0 = rand(1,numel(bounds.PLB)).*(bounds.PUB-bounds.PLB) + bounds.PLB;
+            end
+            if ~isempty(x0_base)
+                x0(~isnan(x0_base)) = x0_base(~isnan(x0_base));
+            end
         end
-        if ~isempty(x0_base)
-            x0(~isnan(x0_base)) = x0_base(~isnan(x0_base));
-        end
+        
         [x(iOpt,:),nll(iOpt)] = bads(@(x_)nllfun(x_,params,data),...
             x0,bounds.LB,bounds.UB,bounds.PLB,bounds.PUB,[],badopts);
     end

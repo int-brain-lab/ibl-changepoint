@@ -18,13 +18,23 @@ test_models{3} = 'changepoint_lapse';
 test_models{4} = 'changepoint_biasedlapse';
 % test_models{5} = 'changepoint_softmax';
 
+% Psychometric curve at zero contrast for a given block
+psycho0 = @(psy,block) psychofun(0,[psy.psycho_mu(block),psy.psycho_sigma(block),psy.psycho_gammalo(block),psy.psycho_gammahi(block)]);
+
 for iMouse = 1:numel(example_mice)
     
     % Fit psychometric curves for all blocks
     modelfits_psy = batch_model_fit('psychofun',example_mice{iMouse},3,1,0);
     idx = find(cellfun(@(p) strcmp(p.model_name,'psychofun'),modelfits_psy.params),1);
     psy_data = modelfits_psy.params{idx};
-    bias_shift.data(iMouse) = psy_data.psycho_mu(3) - psy_data.psycho_mu(1);
+    bias_shift.data(iMouse,1) = psy_data.psycho_mu(3) - psy_data.psycho_mu(1);
+    
+    % Psychometric curves at zero contrast for biased blocks
+    pRblock = psycho0(psy_data,1);
+    pLblock = psycho0(psy_data,3);
+    bias_prob.data.RightBlock(iMouse,1) = pRblock;
+    bias_prob.data.LeftBlock(iMouse,1) = pLblock;
+    bias_prob.data.MatchProbability(iMouse,1) = 0.5*(pRblock + 1 - pLblock);
     
     % Fit all models on unbiased blocks only
     modelfits = batch_model_fit(train_models,[example_mice{iMouse} '_unbiased'],5,1,0);
@@ -61,17 +71,16 @@ for iMouse = 1:numel(example_mice)
             gendata = model_gendata(params1,data_all,nreps);
 
             % Fit psychometric curve to model-generated data
-            psy_model = fit_model('psychofun',gendata,1,0,1);
+            psy_model = fit_model('psychofun',gendata,1,0,1,psy_data);
             bias_shift.(test_models{iModel})(iMouse,iSample) = ...
                 psy_model.psycho_mu(3) - psy_model.psycho_mu(1);
             
             % Psychometric curves at zero contrast for biased blocks
-            pRblock = psychofun(0,[psy_model.psycho_mu(1),psy_model.psycho_sigma(1),psy_model.psycho_gammalo(1),psy_model.psycho_gammahi(1)]);
-            pLblock = psychofun(0,[psy_model.psycho_mu(3),psy_model.psycho_sigma(3),psy_model.psycho_gammalo(3),psy_model.psycho_gammahi(3)]);
-            
+            pRblock = psycho0(psy_model,1);
+            pLblock = psycho0(psy_model,3);
             bias_prob.(test_models{iModel}).RightBlock(iMouse,iSample) = pRblock;
             bias_prob.(test_models{iModel}).LeftBlock(iMouse,iSample) = pLblock;
-            bias_prob.(test_models{iModel}).MatchProbability(iMouse,iSample) = 0.5*(pLblock + 1 - pRblock);
+            bias_prob.(test_models{iModel}).MatchProbability(iMouse,iSample) = 0.5*(pRblock + 1 - pLblock);
                         
             % Store maximum-likelihood psychometric function and data
             if iSample == 1
