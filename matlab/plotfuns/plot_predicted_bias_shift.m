@@ -1,32 +1,40 @@
-function bias_shift = plot_predicted_bias_shift(example_mice,frac_flag,avg_mouse_flag)
+function [bias_shift,bias_prob] = plot_predicted_bias_shift(metric,example_mice,frac_flag,avg_mouse_flag)
 %PLOT_PREDICTED_BIAS_SHIFT Plot results of analysis of optimal bias shift.
 
-if nargin < 2 || isempty(frac_flag)
+if nargin < 1 || isempty(metric)
+    metric = 'bias_shift';
+end
+
+if nargin < 2 || isempty(example_mice)
+    example_mice = {'CSHL_005','CSHL_007','IBL-T1','IBL-T4','ibl_witten_04','ibl_witten_05'};
+end
+
+if nargin < 3 || isempty(frac_flag)
     frac_flag = false;
 end
 
-if nargin < 3 || isempty(avg_mouse_flag)
+if nargin < 4 || isempty(avg_mouse_flag)
     avg_mouse_flag = true;
 end
 
 fontsize = 14;
 
-if nargin < 1 || isempty(example_mice)
-    example_mice = {'CSHL_005','CSHL_007','IBL-T1','IBL-T4','ibl_witten_04','ibl_witten_05'};
-end
 
 Nmice = numel(example_mice);
 Nsamples = 1e3;
 
+bias_shift = [];
+bias_prob = [];
+
 for iMouse = 1:Nmice
-    temp = load([example_mice{iMouse} '_bias_shift.mat'],'bias_shift');
+    temp = load([example_mice{iMouse} '_bias_shift.mat'],'bias_shift','bias_prob');
     
     models = fields(temp.bias_shift)';
     for iModel = 1:numel(models)
         model_shift = temp.bias_shift.(models{iModel});
-        model_bias_prob = temp.bias_prob.(models{iModel}).MatchProbability;
+        model_pmatch = temp.bias_prob.(models{iModel}).MatchProbability;
         
-        % Generate posterior over bias shift for the data
+        % Generate posterior over bias shift and matching probability for the data
         if strcmp(models{iModel},'data') && numel(model_shift) == 1
             temp2 = load([example_mice{iMouse} '_fits.mat'],'modelfits');
             idx = find(cellfun(@(p) strcmp(p.model_name,'psychofun'),temp2.modelfits.params),1);
@@ -36,40 +44,29 @@ for iMouse = 1:Nmice
                 model_shift = [model_shift,sampled_shift'];
                 
                 % Psychometric curves at zero contrast for biased blocks
-                sampled_bias_prob = zeros(1,Nsamples);
+                sampled_pmatch = zeros(1,Nsamples);
+                
+                % Psychometric curve at zero contrast for a given block
+                psycho0 = @(theta,offset) psychofun(0,[theta(1+offset),exp(theta(4+offset)),theta(7+offset),theta(10+offset)]);
+                
                 for iSample = 1:Nsamples
-                    pRblock = psychofun(0,[theta_rnd(iSample,1),theta_rnd(iSample,4),theta_rnd(iSample,7),theta_rnd(iSample,10)]);
-                    pLblock = psychofun(0,[theta_rnd(iSample,3),theta_rnd(iSample,6),theta_rnd(iSample,9),theta_rnd(iSample,12)]);
-                    sampled_bias_prob(iSample) = 0.5*(pLblock + 1 - pRblock);
+                    pRblock = psycho0(theta_rnd(iSample,:),0);
+                    pLblock = psycho0(theta_rnd(iSample,:),2);                    
+                    sampled_pmatch(iSample) = 0.5*(pRblock + 1 - pLblock);
                 end
-                model_bias_prob = [model_bias_prob,sampled_bias_prob];
+                model_pmatch = [model_pmatch,sampled_pmatch];
             end
         end
         
         if strcmp(models{iModel},'data')
             data_shift = model_shift;
+            data_bias_prob = model_pmatch;
         end
         
-        bias_shift.(models{iModel}).mle(iMouse) = model_shift(1);
-        bias_shift.(models{iModel}).frac_mle(iMouse) = ...
-            bias_shift.data.mle(iMouse)/bias_shift.(models{iModel}).mle(iMouse);
+        % Compute bunch of summary statistics
+        bias_shift = metric_stats(bias_shift,model_shift,data_shift,models{iModel},iMouse,Nsamples);
+        bias_prob = metric_stats(bias_prob,model_pmatch,data_bias_prob,models{iModel},iMouse,Nsamples);
                 
-        if numel(model_shift) > 1
-            bias_shift.(models{iModel}).mean(iMouse) = mean(model_shift(2:end));
-            bias_shift.(models{iModel}).std(iMouse) = std(model_shift(2:end));
-            
-            rdata = randi(numel(data_shift)-1,[Nsamples,1])+1;
-            rmodel = randi(numel(model_shift)-1,[Nsamples,1])+1;           
-            frac = data_shift(rdata)./model_shift(rmodel);
-            
-            bias_shift.(models{iModel}).frac_mean(iMouse) = mean(frac);
-            bias_shift.(models{iModel}).frac_std(iMouse) = std(frac);                        
-        else
-            bias_shift.(models{iModel}).mean(iMouse) = NaN;
-            bias_shift.(models{iModel}).std(iMouse) = NaN;            
-            bias_shift.(models{iModel}).frac_mean(iMouse) = NaN;
-            bias_shift.(models{iModel}).frac_std(iMouse) = NaN;                        
-        end        
     end
 end
 
@@ -93,12 +90,8 @@ end
 
 if avg_mouse_flag
     for iModel = 1:numel(models)
-        bias_shift.(models{iModel}).mle(Nmice+1) = mean(bias_shift.(models{iModel}).mle(1:Nmice));
-        bias_shift.(models{iModel}).frac_mle(Nmice+1) = mean(bias_shift.(models{iModel}).frac_mle(1:Nmice));
-        bias_shift.(models{iModel}).mean(Nmice+1) = bias_shift.(models{iModel}).mle(Nmice+1);
-        bias_shift.(models{iModel}).frac_mean(Nmice+1) = bias_shift.(models{iModel}).frac_mle(Nmice+1);
-        bias_shift.(models{iModel}).std(Nmice+1) = std(bias_shift.(models{iModel}).mle(1:Nmice))/sqrt(Nmice);
-        bias_shift.(models{iModel}).frac_std(Nmice+1) = std(bias_shift.(models{iModel}).frac_mle(1:Nmice))/sqrt(Nmice);
+        bias_shift = metric_add_avg_mouse(bias_shift,models{iModel},Nmice);
+        bias_prob = metric_add_avg_mouse(bias_prob,models{iModel},Nmice);
     end
     Nmice = Nmice + 1;
     example_mice{end+1} = 'average';
@@ -108,7 +101,17 @@ end
 yy_max = 0;
 
 for iModel = 1+model_offset:numel(models)
-    tab = bias_shift.(models{iModel});
+    switch metric
+        case 'bias_shift'
+            tab = bias_shift.(models{iModel});
+            metricname = 'bias shift';
+            ybottom = 0;
+        case 'pmatch'
+            tab = bias_prob.(models{iModel});
+            metricname = 'P(match) on 0% trials';
+            ybottom = 0.3;
+    end
+    
     dx = 0.5/(Nmice-1);
     offset = iModel - model_offset - dx*(Nmice+0.5)/2;
     
@@ -140,20 +143,21 @@ for iModel = 1+model_offset:numel(models)
     modeltick{iModel-model_offset} = name;
 end
 
-
-
-
 plot([0,numel(models)+1-model_offset],[1 1],'k--','LineWidth',1);
+if strcmp(metric,'pmatch')
+    plot([0,numel(models)+1-model_offset],0.5*[1 1],'k--','LineWidth',1);
+end
 
 xlim([0,numel(models)+1-model_offset]);
 if frac_flag
     ylim([0 1.2]);
     set(gca,'YTick',[0 0.5 1]);
-    ystring = 'Fraction of optimal bias shift';
+    ystring = ['Fraction of ' metricname];
 else
-    ylim([0 ceil(yy_max*10)/10]);
-    set(gca,'YTick',0:0.05:1);
-    ystring = 'Optimal bias shift (contrast units)';
+    ytop = ceil(yy_max*10)/10;
+    ylim([ybottom ytop]);
+    if ytop < 0.5; set(gca,'YTick',ybottom:0.05:1); else; set(gca,'YTick',ybottom:0.1:1); end
+    ystring = ['Optimal ' metricname];
 end
 
 box off;
@@ -163,7 +167,7 @@ set(gca,'XTick',1:numel(models)-model_offset);
 set(gca,'XTickLabel',modeltick);
 set(gca,'FontSize',fontsize-2);
 
-xlabel('Model used to predict optimal bias shift','FontSize',fontsize);
+xlabel(['Model used to predict optimal ' metricname],'FontSize',fontsize);
 ylabel(ystring,'FontSize',fontsize);
 
 for iMouse = 1:Nmice
@@ -173,5 +177,44 @@ end
 hl = legend(h,mice_names{:});
 set(hl,'Box','off','FontSize',fontsize,'Location','SouthEast');
 
+
+end
+
+%--------------------------------------------------------------------------
+function metric_struct = metric_stats(metric_struct,metric_samples,data_samples,model,iMouse,Nsamples)
+%METRIC_STATS Compute MLE and other summary statistics of a given metric.
+
+metric_struct.(model).mle(iMouse) = metric_samples(1);
+metric_struct.(model).frac_mle(iMouse) = ...
+    metric_struct.data.mle(iMouse)/metric_struct.(model).mle(iMouse);
+
+if numel(metric_samples) > 1
+    metric_struct.(model).mean(iMouse) = mean(metric_samples(2:end));
+    metric_struct.(model).std(iMouse) = std(metric_samples(2:end));
+
+    rdata = randi(numel(data_samples)-1,[Nsamples,1])+1;
+    rmodel = randi(numel(metric_samples)-1,[Nsamples,1])+1;           
+    frac = data_samples(rdata)./metric_samples(rmodel);
+
+    metric_struct.(model).frac_mean(iMouse) = mean(frac);
+    metric_struct.(model).frac_std(iMouse) = std(frac);                        
+else
+    metric_struct.(model).mean(iMouse) = NaN;
+    metric_struct.(model).std(iMouse) = NaN;            
+    metric_struct.(model).frac_mean(iMouse) = NaN;
+    metric_struct.(model).frac_std(iMouse) = NaN;                        
+end
+end
+
+%--------------------------------------------------------------------------
+function metric_struct = metric_add_avg_mouse(metric_struct,model,Nmice)
+%METRIC_ADD_AVG_MOUSE Add average mouse to metric struct.
+
+metric_struct.(model).mle(Nmice+1) = mean(metric_struct.(model).mle(1:Nmice));
+metric_struct.(model).frac_mle(Nmice+1) = mean(metric_struct.(model).frac_mle(1:Nmice));
+metric_struct.(model).mean(Nmice+1) = metric_struct.(model).mle(Nmice+1);
+metric_struct.(model).frac_mean(Nmice+1) = metric_struct.(model).frac_mle(Nmice+1);
+metric_struct.(model).std(Nmice+1) = std(metric_struct.(model).mle(1:Nmice))/sqrt(Nmice);
+metric_struct.(model).frac_std(Nmice+1) = std(metric_struct.(model).frac_mle(1:Nmice))/sqrt(Nmice);
 
 end

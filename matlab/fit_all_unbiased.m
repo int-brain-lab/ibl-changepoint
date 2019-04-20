@@ -95,11 +95,17 @@ end
 
 % Make plots
 close all;
+metrics = {'bias_shift','pmatch'};
+
 subplot(2,1,1);
-bias_shift = plot_predicted_bias_shift([],0);
+bias_shift = plot_predicted_bias_shift(metrics{iFig},[],0);
 subplot(2,1,2);
-plot_predicted_bias_shift([],1);
+plot_predicted_bias_shift(metrics{1},[],1);
 mypath = which('savefigure.m');
-savefigure([fileparts(mypath) filesep() 'bias_shift']);
+savefigure([fileparts(mypath) filesep() metrics{1}]);
+close all;
+[~,pmatch] = plot_predicted_bias_shift(metrics{2},[],0);
+mypath = which('savefigure.m');
+savefigure([fileparts(mypath) filesep() metrics{2}]);
 close all;
 plot_predicted_psychometric_shift(example_mice);
