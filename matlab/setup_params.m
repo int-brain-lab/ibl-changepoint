@@ -34,6 +34,8 @@ while iParam <= numel(params.names)
             case 'sigma'
                 params.sigma = exp(params.sigma);
                 params.sigma_poly = polyfit(log(params.sigma_contrasts),params.sigma,numel(params.sigma_contrasts)-1);                
+            case 'precision'
+                params.precision = exp(params.precision);                
             case 'attention_factor'
                 params.attention_factor = exp(params.attention_factor);
             case 'softmax_eta'
@@ -66,6 +68,10 @@ while iParam <= numel(params.names)
         switch pname
             case 'sigma'
                 bvec = [log(0.1),log(180),log(2),log(60),log(10)];
+            case 'precision'
+                bvec = [log(1/180^2),log(1),log(1/40^2),log(1/5^2),log(1/15^2)];
+            case 'precision_power'
+                bvec = [0,10,0.1,0.9,0.5];                
             case 'lapse_rate'
                 bvec = [0,1,0.01,0.2,0.05];
             case 'lapse_bias'

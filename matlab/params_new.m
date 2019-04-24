@@ -51,10 +51,21 @@ else
     % Bayesian observer models
 
     % Noise parameters (~discrimination threshold at given contrast)
-    params.sigma_contrasts(1,:) = [0.05 0.15 0.45]; % data.contrasts_vec(data.contrasts_vec~=0);
-    params.sigma = linspace(20,5,numel(params.sigma_contrasts));
-    for iParam = 1:numel(params.sigma)
-        params.names{iParam} = 'sigma';
+    if contains(model_name,'altnoise')
+        params.precision = [log(1/10^2), log(1/10^2)];
+        params.precision_power = [1 1];
+        for iParam = 1:numel(params.precision)
+            params.names{iParam} = 'precision';
+        end
+        for iParam = 1:numel(params.precision)
+            params.names{end+1} = 'precision_power';
+        end
+    else
+        params.sigma_contrasts(1,:) = [0.05 0.15 0.45]; % data.contrasts_vec(data.contrasts_vec~=0);
+        params.sigma = linspace(20,5,numel(params.sigma_contrasts));
+        for iParam = 1:numel(params.sigma)
+            params.names{iParam} = 'sigma';
+        end
     end
 
     % Lapse rate

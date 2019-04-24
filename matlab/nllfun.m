@@ -24,6 +24,16 @@ for iParam = 1:Nparams
             sigma(:,1) = sigma(:,1)*params1.attention_factor;
             sigma(:,2) = sigma(:,2)/params1.attention_factor;
         end
+    elseif isfield(params1,'precision')
+       sigma_vec = 1./sqrt(params1.precision(1)*(data.contrasts_vec.^params1.precision_power(1)));
+       sigma_vec(data.contrasts_vec == 0) = Inf;
+       sigma_vec = min(max(sigma_vec,1),360);
+       sigma(:,1) = sigma_vec(data.contrasts_idx);
+       
+       sigma_vec = 1./sqrt(params1.precision(2)*(data.contrasts_vec.^params1.precision_power(2)));
+       sigma_vec(data.contrasts_vec == 0) = Inf;
+       sigma_vec = min(max(sigma_vec,1),360);
+       sigma(:,2) = sigma_vec(data.contrasts_idx);
     else
         sigma = [];
     end
