@@ -10,14 +10,14 @@ RUN="change"
 INPUTFILE="${BASEDIR}/scripts/joblist_${RUN}.txt"
 MAXID=$(sed -n $= ${INPUTFILE})
 
-RUNTIME=24:00:00
+RUNTIME=4:00:00
 MAXRT=NaN
 VERBOSE=0
 MAXFUNMULT="[]"
 
 NODES="1"
 PPN="1"
-MEM="4000MB"
+MEM="6000MB"
 RESOURCES="nodes=${NODES}:ppn=${PPN},mem=${MEM},walltime=${RUNTIME}"
 
 JOBLIST="1-$MAXID"

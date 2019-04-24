@@ -34,6 +34,6 @@ echo ${PARAMS} ${VERBOSE}
 cat<<EOF | matlab -nodisplay
 ibl_changepoint_add2path
 cd('${WORKDIR}');
-example_mice={'$PARAMS'}
+mice_list={'$PARAMS'}
 fit_all_unbiased
 EOF
