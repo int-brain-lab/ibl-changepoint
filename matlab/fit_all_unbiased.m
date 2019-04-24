@@ -1,7 +1,7 @@
 if ~exist('mice_list','var') || isempty(mice_list)
     % Example mice
-    % mice_list = {'CSHL_005','CSHL_007','IBL-T1','IBL-T4','ibl_witten_04','ibl_witten_05'};    
-    mice_list = {'ibl_witten_06', 'IBL-T4', 'ibl_witten_05', 'ibl_witten_04', 'IBL-T1', 'ZM_1092', 'CSHL_007', 'ZM_1093', 'CSHL_010', 'CSHL_008', 'ZM_1085', 'CSHL_003', 'ZM_1084', 'ZM_1098', 'ZM_1091', 'CSHL_005', 'ZM_1097', 'ZM_1086'};
+    % mice_list = {'CSHL_005','CSHL_007','IBL-T1','IBL-T4','ibl_witten_04','ibl_witten_05'};   
+    mice_list = {'CSHL_003','CSHL_005','CSHL_007','CSHL_008','CSHL_010','IBL-T1','IBL-T4','ZM_1084','ZM_1085','ZM_1086','ZM_1091','ZM_1092','ZM_1093','ZM_1097','ZM_1098','ibl_witten_04','ibl_witten_05','ibl_witten_06'};
 end
 
 clear train_models test_models;
@@ -118,7 +118,7 @@ close all;
 metrics = {'bias_shift','pmatch'};
 
 subplot(2,1,1);
-bias_shift = plot_predicted_bias_shift(metrics{iFig},[],0);
+bias_shift = plot_predicted_bias_shift(metrics{1},[],0);
 subplot(2,1,2);
 plot_predicted_bias_shift(metrics{1},[],1);
 mypath = which('savefigure.m');
