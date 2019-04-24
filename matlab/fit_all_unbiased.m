@@ -25,7 +25,7 @@ test_models{1} = [];
 test_models{2} = 'changepoint';
 test_models{3} = 'changepoint_lapse';
 test_models{4} = 'changepoint_biasedlapse';
-train_models{5} = 'omniscient_altnoise';
+test_models{5} = 'omniscient_altnoise';
 % test_models{6} = 'changepoint_softmax';
 
 % Compute posterior distributions over parameters?

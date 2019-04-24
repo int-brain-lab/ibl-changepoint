@@ -27,9 +27,9 @@ bias_shift = [];
 bias_prob = [];
 
 for iMouse = 1:Nmice
-    temp = load([example_mice{iMouse} '_bias_shift.mat'],'bias_shift','bias_prob');
+    temp = load([example_mice{iMouse} '_bias_shift_endtrain.mat'],'bias_shift','bias_prob');
     
-    models = fields(temp.bias_shift)';
+    models = fields(temp.bias_shift)'
     for iModel = 1:numel(models)
         model_shift = temp.bias_shift.(models{iModel});
         model_pmatch = temp.bias_prob.(models{iModel}).MatchProbability;
@@ -81,6 +81,8 @@ for iColor = 1:numel(color_palette)
     colors(iColor,2) = hex2dec(color_palette{iColor}(3:4))/255;
     colors(iColor,3) = hex2dec(color_palette{iColor}(5:6))/255;
 end
+
+colors = [colors; 0.5*ones(20,3)];
 
 if frac_flag
     model_offset = 0;
