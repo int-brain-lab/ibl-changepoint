@@ -33,7 +33,15 @@ addpath([mypath filesep 'utils']);
 matfilename = [data.name '_fits.mat'];
 if exist(matfilename,'file')
     fprintf('Found existing file ''%s'', loading previous fits.\n', matfilename);
-    load(matfilename);
+    for iTry = 1:10
+        try
+            load(matfilename);
+            break;
+        catch
+            fprintf('Try %d: Load failed, possible I/O error. Waiting a few second before retrying...\n', iTry);
+            pause(5 + 5*rand());
+        end
+    end
 else
     modelfits.data = data;
     modelfits.params = [];
