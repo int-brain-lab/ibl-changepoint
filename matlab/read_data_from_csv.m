@@ -22,8 +22,8 @@ if unbiased_flag    % Remove biased trials
 end
 
 if contains(filename,'endtrain')
-    fprintf('Fixing probabilities in all trials to 0.5...\n');
-    data_tab(:,3) = 0.5;    
+    fprintf('Removing biased trials...\n');
+    data_tab(data_tab(:,3) ~= 0.5,:) = [];
 end
 
 [~,name] = fileparts(filename);
