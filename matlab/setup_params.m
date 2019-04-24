@@ -88,9 +88,9 @@ while iParam <= numel(params.names)
             case {'psycho_gammalo','psycho_gammahi'}
                 bvec = [0,0.5,0.01,0.1,0.05];
             case {'prob_low'}
-                bvec = [0.001,0.5,0.05,0.45,0.2];
+                bvec = [1e-6,0.5,0.05,0.45,0.2];
             case {'prob_high'}
-                bvec = [0.5,0.999,0.55,0.95,0.8];
+                bvec = [0.5,1-1-e6,0.55,0.95,0.8];
         end
         
         bounds.LB = [bounds.LB,bvec(1)*ones(1,pnum)];

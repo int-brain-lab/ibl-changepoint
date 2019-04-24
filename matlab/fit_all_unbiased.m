@@ -6,6 +6,12 @@ end
 
 clear train_models test_models;
 
+% Train on unbiased sessions of the biased blocks
+% train_set = 'unbiased';
+
+% Train on final three training sessions (before biased protocol)
+train_set = 'endtrain';
+
 Nsamples = 20;  % Approximate posterior samples for model predictions
 
 train_models{1} = 'psychofun';
@@ -25,6 +31,8 @@ psycho0 = @(psy,block) psychofun(0,[psy.psycho_mu(block),psy.psycho_sigma(block)
 
 for iMouse = 1:numel(mice_list)
     
+    %% First, fit psychometric curve of all biased sessions
+    
     % Fit psychometric curves for all blocks
     modelfits_psy = batch_model_fit('psychofun',mice_list{iMouse},3,1,0);
     idx = find(cellfun(@(p) strcmp(p.model_name,'psychofun'),modelfits_psy.params),1);
@@ -38,8 +46,14 @@ for iMouse = 1:numel(mice_list)
     bias_prob.data.LeftBlock(iMouse,1) = pLblock;
     bias_prob.data.MatchProbability(iMouse,1) = 0.5*(pRblock + 1 - pLblock);
     
-    % Fit all models on unbiased blocks only
-    modelfits = batch_model_fit(train_models,[mice_list{iMouse} '_unbiased'],5,1,0);
+    %% Second, fit all training models on training data only
+    
+    train_filename = [mice_list{iMouse} '_' train_set];
+    
+    % Fit all models on training data
+    modelfits = batch_model_fit(train_models,train_filename,5,1,0);
+    
+    %% Third, simulate ideal change-point observer given training models
     
     % Simulate change-point models on all blocks w/ parameters from unbiased blocks
     data_all = read_data_from_csv(mice_list{iMouse});    % Get mouse data
@@ -92,7 +106,7 @@ for iMouse = 1:numel(mice_list)
         end
     end
     
-    save([mice_list{iMouse} '_bias_shift.mat'],'bias_shift','bias_prob','psy_model_mle','gendata_mle','train_models','test_models');
+    save([mice_list{iMouse} '_bias_shift_' train_set '.mat'],'bias_shift','bias_prob','psy_model_mle','gendata_mle','train_models','test_models');
 end
 
 % Make plots

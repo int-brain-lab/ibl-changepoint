@@ -151,6 +151,11 @@ else
             params.names{end+1} = 'prob_low';
             extra_features{end+1} = 'symmetric probs';
         end
+        if contains(model_name,'_probs')
+            params.names{end+1} = 'prob_low';
+            params.names{end+1} = 'prob_high';
+            extra_features{end+1} = 'probs';
+        end
     end
     
     % Assign extra features to model description
