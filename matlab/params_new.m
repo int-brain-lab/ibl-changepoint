@@ -60,6 +60,8 @@ else
         for iParam = 1:numel(params.precision)
             params.names{end+1} = 'precision_power';
         end
+        extra_features{end+1} = 'asymmetric noise';
+        
     else
         params.sigma_contrasts(1,:) = [0.05 0.15 0.45]; % data.contrasts_vec(data.contrasts_vec~=0);
         params.sigma = linspace(20,5,numel(params.sigma_contrasts));

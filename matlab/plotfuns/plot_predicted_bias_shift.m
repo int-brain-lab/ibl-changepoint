@@ -1,12 +1,13 @@
-function [bias_shift,bias_prob] = plot_predicted_bias_shift(metric,example_mice,frac_flag,avg_mouse_flag)
+function [bias_shift,bias_prob] = plot_predicted_bias_shift(metric,mice_list,frac_flag,avg_mouse_flag)
 %PLOT_PREDICTED_BIAS_SHIFT Plot results of analysis of optimal bias shift.
 
 if nargin < 1 || isempty(metric)
     metric = 'bias_shift';
 end
 
-if nargin < 2 || isempty(example_mice)
-    example_mice = {'CSHL_005','CSHL_007','IBL-T1','IBL-T4','ibl_witten_04','ibl_witten_05'};
+if nargin < 2 || isempty(mice_list)        
+    % mice_list = {'CSHL_005','CSHL_007','IBL-T1','IBL-T4','ibl_witten_04','ibl_witten_05'};   % Example mice
+    mice_list = {'CSHL_003','CSHL_005','CSHL_007','CSHL_008','CSHL_010','IBL-T1','IBL-T4','ZM_1084','ZM_1085','ZM_1086','ZM_1091','ZM_1092','ZM_1093','ZM_1097','ZM_1098','ibl_witten_04','ibl_witten_05','ibl_witten_06'};
 end
 
 if nargin < 3 || isempty(frac_flag)
@@ -20,23 +21,23 @@ end
 fontsize = 14;
 
 
-Nmice = numel(example_mice);
+Nmice = numel(mice_list);
 Nsamples = 1e3;
 
 bias_shift = [];
 bias_prob = [];
 
 for iMouse = 1:Nmice
-    temp = load([example_mice{iMouse} '_bias_shift_endtrain.mat'],'bias_shift','bias_prob');
+    temp = load([mice_list{iMouse} '_bias_shift_endtrain.mat'],'bias_shift','bias_prob');
     
-    models = fields(temp.bias_shift)'
+    models = fields(temp.bias_shift)';
     for iModel = 1:numel(models)
         model_shift = temp.bias_shift.(models{iModel});
         model_pmatch = temp.bias_prob.(models{iModel}).MatchProbability;
         
         % Generate posterior over bias shift and matching probability for the data
         if strcmp(models{iModel},'data') && numel(model_shift) == 1
-            temp2 = load([example_mice{iMouse} '_fits.mat'],'modelfits');
+            temp2 = load([mice_list{iMouse} '_fits.mat'],'modelfits');
             idx = find(cellfun(@(p) strcmp(p.model_name,'psychofun'),temp2.modelfits.params),1);
             theta_rnd = get_posterior_samples(temp2.modelfits.params{idx},Nsamples);
             if ~isempty(theta_rnd)
@@ -96,7 +97,7 @@ if avg_mouse_flag
         bias_prob = metric_add_avg_mouse(bias_prob,models{iModel},Nmice);
     end
     Nmice = Nmice + 1;
-    example_mice{end+1} = 'average';
+    mice_list{end+1} = 'average';
     colors(Nmice,:) = [0 0 0];
 end
 
@@ -173,7 +174,7 @@ xlabel(['Model used to predict optimal ' metricname],'FontSize',fontsize);
 ylabel(ystring,'FontSize',fontsize);
 
 for iMouse = 1:Nmice
-    mice_names{iMouse} = example_mice{iMouse};
+    mice_names{iMouse} = mice_list{iMouse};
     mice_names{iMouse}(mice_names{iMouse} == '_') = '-';
 end
 hl = legend(h,mice_names{:});
