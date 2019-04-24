@@ -77,6 +77,9 @@ if isempty(params) || refit_flag
             end
         end
     end
+        
+    % Fit the complex change-point models with BADS, otherwise use fmincon
+    bads_flag = contains(params.model_name,'changepoint');
 
     for iOpt = 1:Nopts
         if size(opt_init,1) >= iOpt     % Use provided starting points
@@ -92,8 +95,14 @@ if isempty(params) || refit_flag
             end
         end
         
-        [x(iOpt,:),nll(iOpt)] = bads(@(x_)nllfun(x_,params,data),...
-            x0,bounds.LB,bounds.UB,bounds.PLB,bounds.PUB,[],badopts);
+        if bads_flag        
+            [x(iOpt,:),nll(iOpt)] = bads(@(x_)nllfun(x_,params,data),...
+                x0,bounds.LB,bounds.UB,bounds.PLB,bounds.PUB,[],badopts);
+        else
+            fminopts.Display = 'iter';
+            [x(iOpt,:),nll(iOpt)] = fmincon(@(x_)nllfun(x_,params,data),...
+                x0,[],[],[],[],bounds.LB,bounds.UB,[],fminopts);            
+        end
     end
 
     x

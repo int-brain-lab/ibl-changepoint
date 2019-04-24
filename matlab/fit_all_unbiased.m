@@ -26,6 +26,10 @@ test_models{3} = 'changepoint_lapse';
 test_models{4} = 'changepoint_biasedlapse';
 % test_models{5} = 'changepoint_softmax';
 
+% Compute posterior distributions over parameters?
+%compute_posteriors_flag = true;
+compute_posteriors_flag = false;
+
 % Psychometric curve at zero contrast for a given block
 psycho0 = @(psy,block) psychofun(0,[psy.psycho_mu(block),psy.psycho_sigma(block),psy.psycho_gammalo(block),psy.psycho_gammahi(block)]);
 
@@ -34,7 +38,7 @@ for iMouse = 1:numel(mice_list)
     %% First, fit psychometric curve of all biased sessions
     
     % Fit psychometric curves for all blocks
-    modelfits_psy = batch_model_fit('psychofun',mice_list{iMouse},3,1,0);
+    modelfits_psy = batch_model_fit('psychofun',mice_list{iMouse},3,compute_posteriors_flag,0);
     idx = find(cellfun(@(p) strcmp(p.model_name,'psychofun'),modelfits_psy.params),1);
     psy_data = modelfits_psy.params{idx};
     bias_shift.data(iMouse,1) = psy_data.psycho_mu(3) - psy_data.psycho_mu(1);
@@ -51,7 +55,7 @@ for iMouse = 1:numel(mice_list)
     train_filename = [mice_list{iMouse} '_' train_set];
     
     % Fit all models on training data
-    modelfits = batch_model_fit(train_models,train_filename,5,1,0);
+    modelfits = batch_model_fit(train_models,train_filename,5,compute_posteriors_flag,0);
     
     %% Third, simulate ideal change-point observer given training models
     
