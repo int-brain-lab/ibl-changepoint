@@ -67,7 +67,7 @@ while iParam <= numel(params.names)
             case 'sigma'
                 bvec = [log(0.1),log(180),log(2),log(60),log(10)];
             case 'lapse_rate'
-                bvec = [0,1,0.01,0.1,0.05];
+                bvec = [0,1,0.01,0.2,0.05];
             case 'lapse_bias'
                 bvec = [0.01,0.99,0.1,0.9,0.5];
             case 'attention_factor'

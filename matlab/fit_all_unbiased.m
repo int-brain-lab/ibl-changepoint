@@ -55,7 +55,7 @@ for iMouse = 1:numel(mice_list)
     train_filename = [mice_list{iMouse} '_' train_set];
     
     % Fit all models on training data
-    modelfits = batch_model_fit(train_models,train_filename,5,compute_posteriors_flag,0);
+    modelfits = batch_model_fit(train_models,train_filename,20,compute_posteriors_flag,0);
     
     %% Third, simulate ideal change-point observer given training models
     

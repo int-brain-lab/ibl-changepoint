@@ -14,8 +14,8 @@ for iMouse = 1:numel(mice_list)
     
     load([mouse_name '_' training_data '_fits.mat']);
     data_all = read_data_from_csv(mouse_name);
-    % suffix = '_biasedlapse';
     suffix = '';
+    % suffix = '_biasedlapse';
     
     params = params_new(['changepoint' suffix],data_all);
     idx = find(cellfun(@(p) strcmp(p.model_name,['omniscient' suffix]),modelfits.params),1);
