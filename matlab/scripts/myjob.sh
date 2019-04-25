@@ -29,11 +29,12 @@ fi
 
 PARAMS=$(awk "NR==${IID} {print;exit}" ${INPUTFILE})
 
-echo ${PARAMS} ${VERBOSE}
+echo ${PARAMS} ${TRAINSET} ${VERBOSE}
 
 cat<<EOF | matlab -nodisplay
 ibl_changepoint_add2path
 cd('${WORKDIR}');
 mice_list={'$PARAMS'}
+train_set='${TRAINSET}'
 fit_all_unbiased
 EOF
