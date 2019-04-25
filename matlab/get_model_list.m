@@ -8,6 +8,7 @@ switch id
         model_names{3} = 'omniscient_lapse';
         model_names{4} = 'omniscient_biasedlapse';
         model_names{5} = 'omniscient_altnoise';
+        model_names{6} = 'omniscient_doublenoise';
         
     case {2,'changepoint'}
         model_names{1} = 'psychofun';
@@ -15,6 +16,7 @@ switch id
         model_names{3} = 'changepoint_lapse';
         model_names{4} = 'changepoint_biasedlapse';
         model_names{5} = 'changepoint_altnoise';
+        model_names{6} = 'changepoint_doublenoise';
 end
 
 

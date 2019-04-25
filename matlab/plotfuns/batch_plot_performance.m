@@ -4,7 +4,10 @@ if ~exist('mice_list','var') || isempty(mice_list)
     mice_list = get_mice_list();
 end
 
-training_data = 'endtrain';
+test_model_base = 'changepoint';
+% test_model_base = 'omniscient';
+training_data = 'unbiased';
+% training_data = 'endtrain';
 
 for iMouse = 1:numel(mice_list)
     subplot(4,5,iMouse);
@@ -15,9 +18,10 @@ for iMouse = 1:numel(mice_list)
     data_all = read_data_from_csv(mouse_name);
     % suffix = '';
     % suffix = '_biasedlapse';
-    suffix = '_altnoise';
+    suffix = '_doublenoise';
     
-    params = params_new(['changepoint' suffix],data_all);
+    test_model = [test_model_base suffix];    
+    params = params_new(test_model,data_all);
     idx = find(cellfun(@(p) strcmp(p.model_name,['omniscient' suffix]),modelfits.params),1);
     theta_rnd = modelfits.params{idx}.theta;
     params1 = setup_params(theta_rnd(1,:),params);
@@ -30,4 +34,4 @@ end
 fprintf('\n');
 
 mypath = which('savefigure.m');
-savefigure([fileparts(mypath) filesep() 'predicted_performance_with_' training_data]);
+savefigure([fileparts(mypath) filesep() 'predicted_performance_with_' training_data '_and_' test_model]);
