@@ -83,7 +83,7 @@ if isempty(params) || refit_flag
     end
         
     % Fit the complex change-point models with BADS, otherwise use fmincon
-    bads_flag = contains(params.model_name,'changepoint') || contains(params.model_name,'altnoise');
+    bads_flag = contains(params.model_name,{'changepoint','altnoise','doublenoise'});
 
     for iOpt = 1:Nopts
         if size(opt_init,1) >= iOpt     % Use provided starting points

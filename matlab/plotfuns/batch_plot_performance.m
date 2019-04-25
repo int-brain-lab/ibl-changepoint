@@ -29,3 +29,6 @@ for iMouse = 1:numel(mice_list)
     legend off;
 end
 fprintf('\n');
+
+mypath = which('savefigure.m');
+savefigure([fileparts(mypath) filesep() 'predicted_performance_with_' training_data]);

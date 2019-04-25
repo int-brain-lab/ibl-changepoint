@@ -32,8 +32,14 @@ while iParam <= numel(params.names)
         % Extra parameter processing
         switch pname
             case 'sigma'
+                Nsig = numel(params.sigma);
                 params.sigma = exp(params.sigma);
-                params.sigma_poly = polyfit(log(params.sigma_contrasts),params.sigma,numel(params.sigma_contrasts)-1);                
+                if Nsig == numel(params.sigma_contrasts)
+                    params.sigma_poly = polyfit(log(params.sigma_contrasts),params.sigma,numel(params.sigma_contrasts)-1);
+                elseif Nsig == 2*numel(params.sigma_contrasts)
+                    params.sigma_poly_left = polyfit(log(params.sigma_contrasts),params.sigma(1:Nsig/2),numel(params.sigma_contrasts)-1);                
+                    params.sigma_poly_right = polyfit(log(params.sigma_contrasts),params.sigma(Nsig/2+1:end),numel(params.sigma_contrasts)-1);                                    
+                end
             case 'precision'
                 params.precision = exp(params.precision);                
             case 'attention_factor'

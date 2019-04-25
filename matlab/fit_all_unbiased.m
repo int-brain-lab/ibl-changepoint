@@ -6,19 +6,20 @@ end
 
 clear train_models test_models;
 
-% Train on unbiased sessions of the biased blocks
-% train_set = 'unbiased';
-
-% Train on final three training sessions (before biased protocol)
-train_set = 'endtrain';
+if ~exist('train_set','var') || isempty(mice_list)
+    % train_set = 'unbiased';   % Train on unbiased sessions of the biased blocks
+    train_set = 'endtrain';     % Train on last three training sessions (before biased protocol)
+end
 
 Nsamples = 20;  % Approximate posterior samples for model predictions
+Nopts = 20;     % Number of optimization restarts for training fits
 
 train_models{1} = 'psychofun';
 train_models{2} = 'omniscient';
 train_models{3} = 'omniscient_lapse';
 train_models{4} = 'omniscient_biasedlapse';
 train_models{5} = 'omniscient_altnoise';
+train_models{6} = 'omniscient_doublenoise';
 % train_models{6} = 'omniscient_softmax';
 
 test_models{1} = [];
@@ -26,6 +27,7 @@ test_models{2} = 'changepoint';
 test_models{3} = 'changepoint_lapse';
 test_models{4} = 'changepoint_biasedlapse';
 test_models{5} = 'changepoint_altnoise';
+test_models{6} = 'changepoint_doublenoise';
 % test_models{6} = 'changepoint_softmax';
 
 % Compute posterior distributions over parameters?
@@ -57,7 +59,7 @@ for iMouse = 1:numel(mice_list)
     train_filename = [mice_list{iMouse} '_' train_set];
     
     % Fit all models on training data
-    modelfits = batch_model_fit(train_models,train_filename,5,compute_posteriors_flag,0);
+    modelfits = batch_model_fit(train_models,train_filename,Nopts,compute_posteriors_flag,0);
     
     %% Third, simulate ideal change-point observer given training models
     
