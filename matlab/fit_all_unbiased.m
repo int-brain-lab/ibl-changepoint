@@ -6,7 +6,7 @@ end
 
 clear train_models test_models;
 
-if ~exist('train_set','var') || isempty(mice_list)
+if ~exist('train_set','var') || isempty(train_set)
     % train_set = 'unbiased';   % Train on unbiased sessions of the biased blocks
     train_set = 'endtrain';     % Train on last three training sessions (before biased protocol)
 end
