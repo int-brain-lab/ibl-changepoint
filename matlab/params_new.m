@@ -73,6 +73,53 @@ else
             params.names{iParam} = 'sigma';
         end
     end
+    
+    % Load noise parameters from another fit
+    if contains(model_name,'loadnoise')
+        
+        if contains(model_name,'altnoise')
+            noise_model_name = 'omniscient_altnoise';
+        elseif contains(model_name,'doublenoise')
+            noise_model_name = 'omniscient_doublenoise';
+        else
+            noise_model_name = 'omniscient';            
+        end        
+        
+        % Load existing fits
+        mypath = fileparts(mfilename('fullpath'));
+        fits_path = [mypath filesep 'fits'];
+        addpath(fits_path);
+        
+        idx_str = strfind(model_name,'loadnoise');
+        str = model_name(idx_str+numel('loadnoise'):end);
+        idx = find([str '_'] == '_',1);        
+        noisefile = str(1:idx-1);
+
+        matfilename = [data.name '_' noisefile '_fits.mat'];
+        temp = load(matfilename);        
+        for iFit = 1:numel(temp.modelfits.params)
+            pp = temp.modelfits.params{iFit}; 
+            if strcmp(pp.model_name,noise_model_name)
+                params_noise = pp;
+            end
+        end
+        
+        if contains(model_name,'altnoise')
+            params.precision = params_noise.precision;
+            params.precision_power = params_noise.precision_power;
+        elseif contains(model_name,'doublenoise')
+            params.sigma = params_noise.sigma;
+            params.sigma_poly_left = params_noise.sigma_poly_left;
+            params.sigma_poly_right = params_noise.sigma_poly_right;
+        else
+            params.sigma = params_noise.sigma;
+            params.sigma_poly = params_noise.sigma_poly;
+        end
+        
+        % Remove SIGMA from the parameters
+        params.names(cellfun(@(x)strcmp(x,'sigma'),params.names)) = [];
+    end
+    
 
     % Lapse rate
     params.lapse_rate = 0;
