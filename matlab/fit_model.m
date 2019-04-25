@@ -134,24 +134,24 @@ if vbmc_flag
         % Assume smoothed trapezoidal prior over finite box
         logprior = @(x) log(msplinetrapezpdf(x,bounds.LB,bounds.PLB,bounds.PUB,bounds.UB));
         
-        vp_array = [];
+        vbmc_fit = [];
         for iOpt = 1:ceil(Nopts/2)
-            [vp,elbo,elbo_sd,exitflag,output] = ...
+            [vp,~,~,~,output] = ...
                 vbmc(@(x_) -nllfun(x_,params,data)+logprior(x_), ...
                 x0,bounds.LB,bounds.UB,bounds.PLB,bounds.PUB,vbmc_opts);
 
             % Store results
-            vbmc_fit.vp = vp;
-            vbmc_fit.elbo = elbo;
-            vbmc_fit.elbo_sd = elbo_sd;
-            vbmc_fit.exitflag = exitflag;
-            vbmc_fit.output = output;
-
-            params.vbmc_fit(iOpt) = vbmc_fit;
-            vp_array{iOpt} = vp;
+            vbmc_fit.vps{iOpt} = vp;
+            vbmc_fit.outputs{iOpt} = output;
         end
         
-        vbmc_diagnostics(vp_array);
+        [exitflag,best,idx_best,stats] = vbmc_diagnostics(vbmc_fit.vps);
+        vbmc_fit.diagnostics.exitflag = exitflag;
+        vbmc_fit.diagnostics.best = best;
+        vbmc_fit.diagnostics.idx_best = idx_best;
+        vbmc_fit.diagnostics.stats = stats;
+        
+        params.vbmc_fit = vbmc_fit;
     end
 end
 
