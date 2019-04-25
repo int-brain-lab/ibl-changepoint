@@ -1,8 +1,7 @@
 % PLOT all mice performance
 
 if ~exist('mice_list','var') || isempty(mice_list)
-    % mice_list = {'CSHL_005','CSHL_007','IBL-T1','IBL-T4','ibl_witten_04','ibl_witten_05'}; % Example mice
-    mice_list = {'CSHL_003','CSHL_005','CSHL_007','CSHL_008','CSHL_010','IBL-T1','IBL-T4','ZM_1084','ZM_1085','ZM_1086','ZM_1091','ZM_1092','ZM_1093','ZM_1097','ZM_1098','ibl_witten_04','ibl_witten_05','ibl_witten_06'};
+    mice_list = get_mice_list();
 end
 
 training_data = 'endtrain';

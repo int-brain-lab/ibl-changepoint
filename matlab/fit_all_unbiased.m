@@ -1,7 +1,5 @@
 if ~exist('mice_list','var') || isempty(mice_list)
-    % Example mice
-    % mice_list = {'CSHL_005','CSHL_007','IBL-T1','IBL-T4','ibl_witten_04','ibl_witten_05'};   
-    mice_list = {'CSHL_003','CSHL_005','CSHL_007','CSHL_008','CSHL_010','IBL-T1','IBL-T4','ZM_1084','ZM_1085','ZM_1086','ZM_1091','ZM_1092','ZM_1093','ZM_1097','ZM_1098','ibl_witten_04','ibl_witten_05','ibl_witten_06'};
+    mice_list = get_mice_list();
 end
 
 clear train_models test_models;
@@ -20,7 +18,6 @@ train_models{3} = 'omniscient_lapse';
 train_models{4} = 'omniscient_biasedlapse';
 train_models{5} = 'omniscient_altnoise';
 train_models{6} = 'omniscient_doublenoise';
-% train_models{6} = 'omniscient_softmax';
 
 test_models{1} = [];
 test_models{2} = 'changepoint';
@@ -28,7 +25,6 @@ test_models{3} = 'changepoint_lapse';
 test_models{4} = 'changepoint_biasedlapse';
 test_models{5} = 'changepoint_altnoise';
 test_models{6} = 'changepoint_doublenoise';
-% test_models{6} = 'changepoint_softmax';
 
 % Compute posterior distributions over parameters?
 %compute_posteriors_flag = true;

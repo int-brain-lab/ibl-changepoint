@@ -5,11 +5,9 @@ if nargin < 1 || isempty(metric)
     metric = 'bias_shift';
 end
 
-if nargin < 2 || isempty(mice_list)        
-    % mice_list = {'CSHL_005','CSHL_007','IBL-T1','IBL-T4','ibl_witten_04','ibl_witten_05'};   % Example mice
-    mice_list = {'CSHL_003','CSHL_005','CSHL_007','CSHL_008','CSHL_010','IBL-T1','IBL-T4','ZM_1084','ZM_1085','ZM_1086','ZM_1091','ZM_1092','ZM_1093','ZM_1097','ZM_1098','ibl_witten_04','ibl_witten_05','ibl_witten_06'};
-end
-
+if nargin < 2; mice_list = []; end
+if ~iscell(mice_list); mice_list = get_mice_list(mice_list); end
+ 
 if nargin < 3 || isempty(frac_flag)
     frac_flag = false;
 end

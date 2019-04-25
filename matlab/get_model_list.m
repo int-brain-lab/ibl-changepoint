@@ -2,7 +2,7 @@ function model_names = get_model_list(id)
 %GET_MODEL_LIST Get cell array of standard models.
 
 switch id
-    case {1,'omniscient'}
+    case {1,'omniscient','default'}
         model_names{1} = 'psychofun';
         model_names{2} = 'omniscient';
         model_names{3} = 'omniscient_lapse';
