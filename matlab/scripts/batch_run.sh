@@ -5,14 +5,16 @@ BASEDIR="${HOME}/${PROJECT}/matlab"
 SOURCEDIR="${BASEDIR}/"
 JOBSCRIPT="${BASEDIR}/scripts/myjob.sh"
 
-TRAINSET="endtrain"
+TRAINSET="unbiased"
+RUNTYPE=${1}
 
 #Job parameters
 RUN=$TRAINSET
-INPUTFILE="${BASEDIR}/scripts/joblist_${RUN}.txt"
+MICELIST="apr2019"
+INPUTFILE="${BASEDIR}/scripts/joblist_${MICELIST}.txt"
 MAXID=$(sed -n $= ${INPUTFILE})
 
-RUNTIME=6:00:00
+RUNTIME=24:00:00
 MAXRT=NaN
 VERBOSE=0
 MAXFUNMULT="[]"
@@ -35,4 +37,4 @@ cd ${WORKDIR}
 JOBNAME=${SHORTNAME}${RUN}
 
 # running on Prince
-sbatch --error=slurm-%A_%a.err --verbose --array=${JOBLIST} --mail-type=FAIL --mail-user=${USER}@nyu.edu --mem=${MEM} --time=${RUNTIME} --nodes=${NODES} --ntasks-per-node=${PPN} --export=PROJECT=${PROJECT},RUN=${RUN},TRAINSET=${TRAINSET},MAXID=$MAXID,WORKDIR=$WORKDIR,USER=$USER,MAXRT=$MAXRT,INPUTFILE=${INPUTFILE},VERBOSE=${VERBOSE},MAXFUNMULT=${MAXFUNMULT} --job-name=${JOBNAME} ${JOBSCRIPT}
+sbatch --error=slurm-%A_%a.err --verbose --array=${JOBLIST} --mail-type=FAIL --mail-user=${USER}@nyu.edu --mem=${MEM} --time=${RUNTIME} --nodes=${NODES} --ntasks-per-node=${PPN} --export=PROJECT=${PROJECT},RUN=${RUN},TRAINSET=${TRAINSET},RUNTYPE=${RUNTYPE},MAXID=$MAXID,WORKDIR=$WORKDIR,USER=$USER,MAXRT=$MAXRT,INPUTFILE=${INPUTFILE},VERBOSE=${VERBOSE},MAXFUNMULT=${MAXFUNMULT} --job-name=${JOBNAME} ${JOBSCRIPT}

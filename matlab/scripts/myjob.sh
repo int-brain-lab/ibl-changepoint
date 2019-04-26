@@ -34,7 +34,19 @@ echo ${PARAMS} ${TRAINSET} ${VERBOSE}
 cat<<EOF | matlab -nodisplay
 ibl_changepoint_add2path
 cd('${WORKDIR}');
-mice_list={'$PARAMS'}
-train_set='${TRAINSET}'
-fit_all_unbiased
+runtype='${RUNTYPE}'
+
+switch runtype
+	case 'train'
+		mice_list={'$PARAMS'}
+		train_set='${TRAINSET}'
+		fit_all_unbiased
+	case 'fit'
+		model_names = {'changepoint_doublenoise_loadnoiseendtrain_runlength_probs','changepoint_doublenoise_loadnoiseunbiased_runlength_probs'};
+		Nopts = 10;
+		vbmc_flag = true;
+		refit_flag = true;
+		modelfits = batch_model_fit(model_names,'$PARAMS',Nopts,vbmc_flag,refit_flag);
+end
+
 EOF
