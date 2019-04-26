@@ -1,5 +1,7 @@
-function modelfits = batch_model_fit(model_names,filename,Nopts,vbmc_flag,refit_flag)
+function modelfits = batch_model_fit(model_names,data_filename,Nopts,vbmc_flag,refit_flag)
 %BATCH_MODEL_FIT Fit a batch of models and save results.
+
+% TODO: Change saving method to separate files for each data/model
 
 if nargin < 3 || isempty(Nopts); Nopts = 10; end
 if nargin < 4 || isempty(vbmc_flag); vbmc_flag = false; end
@@ -33,13 +35,13 @@ switch numel(model_names)
 end
 
 % Load data file
-data = read_data_from_csv(filename);
+data = read_data_from_csv(data_filename);
 
 modelfits.data = data;
 modelfits.params = [];
 
 % Read existing MODELFITS if present
-matfilename = [filename '_fits.mat'];
+matfilename = [data_filename '_fits.mat'];
 if exist(matfilename,'file')
     fprintf('Found existing file ''%s'', loading previous fits.\n', matfilename);
     for iTry = 1:10
@@ -73,7 +75,7 @@ for iModel = 1:numel(model_names)
         modelfits.params{end+1} = params;
     end    
     
-    save([fits_path filesep() filename '_fits.mat'],'modelfits');
+    save([fits_path filesep() data_filename '_fits.mat'],'modelfits');
     
     % Plot
     subplot(plotrows,plotcols,iModel);
@@ -81,6 +83,6 @@ for iModel = 1:numel(model_names)
 end
 
 mypath = which('savefigure.m');
-savefigure([fileparts(mypath) filesep() filename]);
+savefigure([fileparts(mypath) filesep() data_filename]);
 
 end

@@ -20,7 +20,12 @@ if size(sigma,2) == 1; sigma = repmat(sigma,[1,2]); end
 
 loglikeL = bsxfun(@plus,-0.5*bsxfun(@rdivide,X-data.mu(1),sigma(:,1)).^2, -log(sigma(:,1)));
 loglikeR = bsxfun(@plus,-0.5*bsxfun(@rdivide,X-data.mu(2),sigma(:,2)).^2, -log(sigma(:,2)));
-logprior_odds = log(data.p_true./(1-data.p_true));
+
+if isfield(params,'fixed_prior') && ~isempty(params.fixed_prior)
+    logprior_odds = log(params.fixed_prior./(1-params.fixed_prior));
+else
+    logprior_odds = log(data.p_true./(1-data.p_true));
+end
 
 % Decision variable (>0 for L, <0 for R)
 dhat = bsxfun(@plus, loglikeL - loglikeR, logprior_odds);

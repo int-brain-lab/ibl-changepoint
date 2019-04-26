@@ -18,6 +18,7 @@ train_models{3} = 'omniscient_lapse';
 train_models{4} = 'omniscient_biasedlapse';
 train_models{5} = 'omniscient_altnoise';
 train_models{6} = 'omniscient_doublenoise';
+train_models{7} = 'changepoint_doublenoise';
 
 test_models{1} = [];
 test_models{2} = 'changepoint';
@@ -25,6 +26,7 @@ test_models{3} = 'changepoint_lapse';
 test_models{4} = 'changepoint_biasedlapse';
 test_models{5} = 'changepoint_altnoise';
 test_models{6} = 'changepoint_doublenoise';
+test_models{7} = 'changepoint_doublenoise';
 
 % Compute posterior distributions over parameters?
 %compute_posteriors_flag = true;

@@ -153,7 +153,12 @@ else
     if contains(model_name,'_attention')
         params.names{end+1} = 'attention_factor';
         extra_features{end+1} = 'attention';
-    end    
+    end
+    
+    if contains(model_name,'fixedprior')
+        params.fixed_prior = 0.5;
+        extra_features{end+1} = 'fixed prior';
+    end
     
     %% Parameters for change-point observer only
 

@@ -4,8 +4,9 @@ if ~exist('mice_list','var') || isempty(mice_list)
     mice_list = get_mice_list();
 end
 
-test_model_base = 'changepoint';
+% test_model_base = 'changepoint';
 % test_model_base = 'omniscient';
+test_model_base = 'omniscient_fixedprior';
 training_data = 'unbiased';
 % training_data = 'endtrain';
 

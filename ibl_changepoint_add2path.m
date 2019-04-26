@@ -16,7 +16,7 @@ addpath([repo_path filesep 'data']);
 matlab_path = [repo_path filesep 'matlab'];
 addpath(matlab_path);
 
-folders_list = {'figures','fits','plotfuns','scripts','utils'};
+folders_list = {'figures','fits','models','plotfuns','scripts','utils'};
 
 for iFolder = 1:numel(folders_list)
     folder_path = [matlab_path filesep folders_list{iFolder}];

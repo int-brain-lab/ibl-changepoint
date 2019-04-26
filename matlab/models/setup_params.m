@@ -73,9 +73,9 @@ while iParam <= numel(params.names)
         % BVEC is LB,UB,PLB,PUB,X0 for that parameter
         switch pname
             case 'sigma'
-                bvec = [log(0.1),log(180),log(2),log(60),log(10)];
+                bvec = log([0.1,180,2,60,15]);
             case 'precision'
-                bvec = [log(1/180^2),log(1),log(1/40^2),log(1/5^2),log(1/15^2)];
+                bvec = log([1/180^2,1,1/40^2,1/5^2,1/15^2]);
             case 'precision_power'
                 bvec = [0,10,0.1,0.9,0.5];                
             case 'lapse_rate'
@@ -89,20 +89,21 @@ while iParam <= numel(params.names)
             case 'softmax_bias'
                 bvec = [-50,50,-10,10,0];
             case 'runlength_tau'
-                bvec = [0,log(200),log(10),log(100),log(60)];
+                bvec = log([1,200,2,100,60]);
             case 'runlength_min'
-                bvec = [0,log(100),log(5),log(40),log(20)];                
+                bvec = log([1,100,2,40,20]);
+                
             % Psychometric function parameters
             case 'psycho_mu'
                 bvec = [-1,1,-0.2,0.2,0];
             case 'psycho_sigma'
-                bvec = [log(0.001),log(10),log(0.01),log(1),log(0.1)];
+                bvec = log([0.001,10,0.01,1,0.1]);
             case {'psycho_gammalo','psycho_gammahi'}
                 bvec = [0,0.5,0.01,0.1,0.05];
             case {'prob_low'}
-                bvec = [1e-6,0.5,0.05,0.45,0.2];
+                bvec = [1e-6,0.5,0.01,0.49,0.2];
             case {'prob_high'}
-                bvec = [0.5,1-1e-6,0.55,0.95,0.8];
+                bvec = [0.5,1-1e-6,0.51,0.99,0.8];
         end
         
         bounds.LB = [bounds.LB,bvec(1)*ones(1,pnum)];
