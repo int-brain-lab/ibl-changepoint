@@ -24,10 +24,8 @@ mouse_string(mouse_string == '_') = '-';
 for iModel = 1:4
     subplot(plotrows,plotcols,iModel);
     if iModel == 1  % Real data
-        temp = load([mouse_name '_fits.mat']);
-        true_data = temp.modelfits.data;
-        idx = find(cellfun(@(p) strcmp(p.model_name,'psychofun'),temp.modelfits.params),1);
-        true_params = temp.modelfits.params{idx};
+        true_data = read_data_from_csv(mouse_name);
+        true_params = load_model_fit(mouse_name,'psychofun');
         title_string = ['data (' mouse_string ')'];
         plot_fit(true_data,true_params,title_string,0);
         true_data.resp_obs(:) = NaN;

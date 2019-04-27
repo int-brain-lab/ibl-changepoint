@@ -95,14 +95,7 @@ else
         idx = find([str '_'] == '_',1);        
         noisefile = str(1:idx-1);
 
-        matfilename = [data.name '_' noisefile '_fits.mat'];
-        temp = load(matfilename);        
-        for iFit = 1:numel(temp.modelfits.params)
-            pp = temp.modelfits.params{iFit}; 
-            if strcmp(pp.model_name,noise_model_name)
-                params_noise = pp;
-            end
-        end
+        params_noise = load_model_fit([data.name '_' noisefile],noise_model_name);
         
         if contains(model_name,'altnoise')
             params.precision = params_noise.precision;

@@ -20,41 +20,11 @@ if iscell(opt_init)
     opt_init = temp;
 end
 
-if ischar(data)
-    data = read_data_from_csv(data);   % Load data
-end
+% Load data file if passed as string
+if ischar(data); data = read_data_from_csv(data); end
 
-% Load existing fits
-mypath = fileparts(mfilename('fullpath'));
-fits_path = [mypath filesep 'fits'];
-addpath(fits_path);
-addpath([mypath filesep 'utils']);
-
-matfilename = [data.name '_fits.mat'];
-if exist(matfilename,'file')
-    fprintf('Found existing file ''%s'', loading previous fits.\n', matfilename);
-    for iTry = 1:10
-        try load(matfilename); break;
-        catch; fprintf('Try %d: I/O error. Waiting a few second before retrying...\n', iTry); pause(5 + 5*rand());
-        end
-    end
-else
-    modelfits.data = data;
-    modelfits.params = [];
-end
-
-% Check if model was already fitted to this dataset
-params = [];
-idx_params = [];
-if ~isempty(modelfits.params)
-    for iFit = 1:numel(modelfits.params)
-        pp = modelfits.params{iFit}; 
-        if strcmp(pp.model_name,model_name)
-            params = pp;
-            idx_params = iFit;
-        end
-    end
-end
+% Load fit if model was already fitted to this dataset
+params = load_model_fit(data.name,model_name);
 
 %% Maximum likelihood fit
 if isempty(params) || refit_flag
@@ -68,17 +38,15 @@ if isempty(params) || refit_flag
 
     % Find starting point from other models
     x0_base = [];
-    if ~isempty(params.model_startingfit) && ~isempty(modelfits)
-        for iFit = 1:numel(modelfits.params)
-            pp = modelfits.params{iFit};
-            if strcmp(pp.model_name,params.model_startingfit)
-                x0_base = NaN(1,numel(params.names));
-                %----------------------------------------------------------
-                % This should be assigned based on matching parameter names!
-                %----------------------------------------------------------
-                x0_base(1:numel(pp.theta)) = pp.theta;  % TO BE FIXED
-                fprintf('Reading starting point from model %s.\n', params.model_startingfit);
-            end
+    if ~isempty(params.model_startingfit)
+        params1 = load_model_fit(data.name,params.model_startingfit);
+        if ~isempty(params1)
+            x0_base = NaN(1,numel(params.names));
+            %----------------------------------------------------------
+            % This should be assigned based on matching parameter names!
+            %----------------------------------------------------------
+            x0_base(1:numel(params1.theta)) = params1.theta;  % TO BE FIXED
+            fprintf('Reading starting point from model %s.\n', params.model_startingfit);
         end
     end
         
@@ -94,7 +62,7 @@ if isempty(params) || refit_flag
             else
                 x0 = rand(1,numel(bounds.PLB)).*(bounds.PUB-bounds.PLB) + bounds.PLB;
             end
-            if ~isempty(x0_base)
+            if ~isempty(x0_base) && iOpt <= ceil(Nopts/3)
                 x0(~isnan(x0_base)) = x0_base(~isnan(x0_base));
             end
         end

@@ -36,49 +36,21 @@ end
 % Load data file
 data = read_data_from_csv(filename);
 
-modelfits.data = data;
-modelfits.params = [];
-
-% Read training MODELFITS
-matfilename_train = [filename_train '_fits.mat'];
-train_fits = load(matfilename_train);
-
-% Read test MODELFITS (only for psychometric curve plotting)
-matfilename_test = [filename '_fits.mat'];
-try
-    test_fits = load(matfilename_test);
-catch
-    test_fits = [];
-end
-
 for iModel = 1:numel(model_names)
     if contains(model_names{iModel},'psychofun')
         % Look for psychometric model of the TEST data
-        idx_params = [];
-        for iFit = 1:numel(test_fits.modelfits.params)
-            pp = test_fits.modelfits.params{iFit}; 
-            if strcmp(pp.model_name,model_names_train{iModel})
-                idx_params = iFit;
-            end
-        end
-        params = test_fits.modelfits.params{idx_params};
-        
+        params = load_model_fit(filename,model_names{iModel});        
     else
         % Look for training model in TRAINING fits
-        idx_params = [];
-        for iFit = 1:numel(train_fits.modelfits.params)
-            pp = train_fits.modelfits.params{iFit}; 
-            if strcmp(pp.model_name,model_names_train{iModel})
-                idx_params = iFit;
-            end
-        end
-
+        params_train = load_model_fit(filename_train,model_names_train{iModel});
+        
+        % If training and test models are different, transfer parameters
         if ~strcmp(filename,filename_train)    
-            theta = train_fits.modelfits.params{idx_params}.theta;        
+            theta = params_train.theta;        
             params = params_new(model_names{iModel},data);
             params = setup_params(theta,params);
         else
-            params = train_fits.modelfits.params{idx_params};
+            params = params_train;
         end
     end
     

@@ -7,11 +7,6 @@ if nargin < 3 || isempty(Nopts); Nopts = 10; end
 if nargin < 4 || isempty(vbmc_flag); vbmc_flag = false; end
 if nargin < 5 || isempty(refit_flag); refit_flag = false; end
 
-mypath = fileparts(mfilename('fullpath'));
-fits_path = [mypath filesep 'fits'];
-addpath(fits_path);
-addpath([mypath filesep 'utils']);
-
 close all;
 
 % Models to be fitted
@@ -40,43 +35,17 @@ data = read_data_from_csv(data_filename);
 modelfits.data = data;
 modelfits.params = [];
 
-% Read existing MODELFITS if present
-matfilename = [data_filename '_fits.mat'];
-if exist(matfilename,'file')
-    fprintf('Found existing file ''%s'', loading previous fits.\n', matfilename);
-    for iTry = 1:10
-        try load(matfilename); break;
-        catch; fprintf('Try %d: I/O error. Waiting a few second before retrying...\n', iTry); pause(5 + 5*rand());
-        end
-    end
-end
-
 for iModel = 1:numel(model_names)
     
     if isempty(model_names{iModel}); continue; end
     
-    params = fit_model(model_names{iModel},data,Nopts,vbmc_flag,refit_flag);
-    
-    % Add fit to MODELFITS cell array
-    
-    % Check if model was already fitted to this session
-    idx_params = [];
-    for iFit = 1:numel(modelfits.params)
-        pp = modelfits.params{iFit}; 
-        if strcmp(pp.model_name,model_names{iModel})
-            idx_params = iFit;
-        end
-    end
-    
-    % Save fits
-    if ~isempty(idx_params)
-        modelfits.params{idx_params} = params;
-    else
-        modelfits.params{end+1} = params;
-    end    
-    
-    save([fits_path filesep() data_filename '_fits.mat'],'modelfits');
-    
+    % Fit and save model
+    params = fit_model(model_names{iModel},data,Nopts,vbmc_flag,refit_flag);        
+    save_model_fit(data_filename,params);
+        
+    % Store fits
+    modelfits.params{end+1} = params;
+
     % Plot
     subplot(plotrows,plotcols,iModel);
     plot_fit(data,params,params.model_desc);

@@ -24,7 +24,6 @@ plot_data_flag = any(isfinite(data.resp_obs));
 
 cc_vec = unique(data.contrasts);
 cc_vec = [cc_vec(cc_vec>0)',Inf];
-       
 
 for i_contrast = 1:numel(cc_vec)
     if isfinite(cc_vec(i_contrast))
@@ -68,6 +67,8 @@ if ~isempty(params)
     legtext{2} = params.model_desc;
 end
 
+output.data_mean = data_mean;
+output.model_mean = model_mean;
 
 % %% Loop over block types
 % for i_prob = 1:numel(p_true_vec)

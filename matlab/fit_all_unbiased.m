@@ -5,28 +5,28 @@ end
 clear train_models test_models;
 
 if ~exist('train_set','var') || isempty(train_set)
-    % train_set = 'unbiased';   % Train on unbiased sessions of the biased blocks
-    train_set = 'endtrain';     % Train on last three training sessions (before biased protocol)
+    train_set = 'unbiased';   % Train on unbiased sessions of the biased blocks
+    % train_set = 'endtrain';     % Train on last three training sessions (before biased protocol)
 end
 
 Nsamples = 20;  % Approximate posterior samples for model predictions
 Nopts = 20;     % Number of optimization restarts for training fits
 
-train_models{1} = 'psychofun';
-train_models{2} = 'omniscient';
-train_models{3} = 'omniscient_lapse';
-train_models{4} = 'omniscient_biasedlapse';
-train_models{5} = 'omniscient_altnoise';
-train_models{6} = 'omniscient_doublenoise';
-train_models{7} = 'changepoint_doublenoise';
+% train_models{1} = 'psychofun';
+% train_models{2} = 'omniscient';
+% train_models{3} = 'omniscient_lapse';
+% train_models{4} = 'omniscient_biasedlapse';
+% train_models{5} = 'omniscient_altnoise';
+% train_models{6} = 'omniscient_doublenoise';
+train_models{1} = 'changepoint_doublenoise';
 
-test_models{1} = [];
-test_models{2} = 'changepoint';
-test_models{3} = 'changepoint_lapse';
-test_models{4} = 'changepoint_biasedlapse';
-test_models{5} = 'changepoint_altnoise';
-test_models{6} = 'changepoint_doublenoise';
-test_models{7} = 'changepoint_doublenoise';
+% test_models{1} = [];
+% test_models{2} = 'changepoint';
+% test_models{3} = 'changepoint_lapse';
+% test_models{4} = 'changepoint_biasedlapse';
+% test_models{5} = 'changepoint_altnoise';
+% test_models{6} = 'changepoint_doublenoise';
+test_models{1} = 'changepoint_doublenoise';
 
 % Compute posterior distributions over parameters?
 %compute_posteriors_flag = true;

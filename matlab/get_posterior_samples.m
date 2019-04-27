@@ -1,7 +1,5 @@
-function X = get_posterior_samples(params,N,beta_lcb)
+function X = get_posterior_samples(params,N)
 %GET_POSTERIOR_SAMPLES Return samples from (approximate) posterior.
-
-if nargin < 3 || isempty(beta_lcb); beta_lcb = 3; end
 
 X = [];
 
