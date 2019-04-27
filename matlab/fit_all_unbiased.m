@@ -1,3 +1,5 @@
+%FIT_ALL_FROM_TRAIN Fit all models on training data only.
+
 if ~exist('mice_list','var') || isempty(mice_list)
     mice_list = get_mice_list();
 end
@@ -9,24 +11,31 @@ if ~exist('train_set','var') || isempty(train_set)
     % train_set = 'endtrain';     % Train on last three training sessions (before biased protocol)
 end
 
-Nsamples = 20;  % Approximate posterior samples for model predictions
-Nopts = 20;     % Number of optimization restarts for training fits
+Nsamples = 1;  % Approximate posterior samples for model predictions
+Nopts = 1;     % # optimization restarts for training fits
+Nopts_psy = 1; % # optimization restarts for fitting psychometric curves
 
-% train_models{1} = 'psychofun';
-% train_models{2} = 'omniscient';
-% train_models{3} = 'omniscient_lapse';
-% train_models{4} = 'omniscient_biasedlapse';
-% train_models{5} = 'omniscient_altnoise';
-% train_models{6} = 'omniscient_doublenoise';
-train_models{1} = 'changepoint_doublenoise';
+train_models = []; test_models = [];
 
-% test_models{1} = [];
-% test_models{2} = 'changepoint';
-% test_models{3} = 'changepoint_lapse';
-% test_models{4} = 'changepoint_biasedlapse';
-% test_models{5} = 'changepoint_altnoise';
-% test_models{6} = 'changepoint_doublenoise';
-test_models{1} = 'changepoint_doublenoise';
+train_models{end+1} = 'psychofun';
+train_models{end+1} = 'omniscient_doublenoise_fixedbiasedlapse';
+train_models{end+1} = 'changepoint_doublenoise_fixedbiasedlapse';
+train_models{end+1} = 'omniscient';
+train_models{end+1} = 'omniscient_lapse';
+train_models{end+1} = 'omniscient_biasedlapse';
+train_models{end+1} = 'omniscient_altnoise';
+train_models{end+1} = 'omniscient_doublenoise';
+train_models{end+1} = 'changepoint_doublenoise';
+
+test_models{end+1} = [];
+test_models{end+1} = 'omniscient_doublenoise_fixedbiasedlapse';
+test_models{end+1} = 'changepoint_doublenoise_fixedbiasedlapse';
+test_models{end+1} = 'changepoint';
+test_models{end+1} = 'changepoint_lapse';
+test_models{end+1} = 'changepoint_biasedlapse';
+test_models{end+1} = 'changepoint_altnoise';
+test_models{end+1} = 'changepoint_doublenoise';
+test_models{end+1} = 'changepoint_doublenoise';
 
 % Compute posterior distributions over parameters?
 %compute_posteriors_flag = true;
@@ -40,7 +49,7 @@ for iMouse = 1:numel(mice_list)
     %% First, fit psychometric curve of all biased sessions
     
     % Fit psychometric curves for all blocks
-    modelfits_psy = batch_model_fit('psychofun',mice_list{iMouse},3,compute_posteriors_flag,0);
+    modelfits_psy = batch_model_fit('psychofun',mice_list{iMouse},Nopts_psy,compute_posteriors_flag,0);
     idx = find(cellfun(@(p) strcmp(p.model_name,'psychofun'),modelfits_psy.params),1);
     psy_data = modelfits_psy.params{idx};
     bias_shift.data(iMouse,1) = psy_data.psycho_mu(3) - psy_data.psycho_mu(1);

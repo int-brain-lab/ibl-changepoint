@@ -50,8 +50,8 @@ if isempty(params) || refit_flag
         end
     end
         
-    % Fit the complex change-point models with BADS, otherwise use fmincon
-    bads_flag = contains(params.model_name,{'changepoint','altnoise','doublenoise'});
+    % Fits all models but psychometric curves with BADS    
+    bads_flag = ~contains(params.model_name,{'psychofun'});
 
     for iOpt = 1:Nopts
         if size(opt_init,1) >= iOpt     % Use provided starting points

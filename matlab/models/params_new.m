@@ -131,10 +131,25 @@ else
         params.names{end+1} = 'lapse_rate';
         params.names{end+1} = 'lapse_bias';
         extra_features{end+1} = 'biased lapse';
+
+    elseif contains(model_name,'_fixedbiasedlapse')
+        extra_features{end+1} = 'fixed biased lapse';
+        
+        left_hi = 1-data.resp_correct(data.contrasts == 1 & data.S < 0);
+        right_hi = data.resp_correct(data.contrasts == 1 & data.S > 0);        
+        lapse_left = 1 - mean(left_hi);
+        lapse_right = 1 - mean(right_hi);
+        Nleft = numel(left_hi);
+        Nright = numel(right_hi);
+        
+        params.lapse_rate = 1+mean(left_hi)-mean(right_hi);
+        params.lapse_bias = mean(left_hi)/params.lapse_rate;
+        
+        params
         
     elseif contains(model_name,'_lapse')
         params.names{end+1} = 'lapse_rate';
-        extra_features{end+1} = 'lapse';
+        extra_features{end+1} = 'lapse';        
     end
     
     if contains(model_name,'_softmax')
