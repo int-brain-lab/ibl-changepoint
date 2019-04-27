@@ -137,13 +137,9 @@ else
         
         left_hi = 1-data.resp_correct(data.contrasts == 1 & data.S < 0);
         right_hi = data.resp_correct(data.contrasts == 1 & data.S > 0);        
-        lapse_left = 1 - mean(left_hi);
-        lapse_right = 1 - mean(right_hi);
-        Nleft = numel(left_hi);
-        Nright = numel(right_hi);
         
         params.lapse_rate = 1+mean(left_hi)-mean(right_hi);
-        params.lapse_bias = mean(left_hi)/params.lapse_rate;
+        params.lapse_bias = 1 - mean(left_hi)/params.lapse_rate;
         
         params
         

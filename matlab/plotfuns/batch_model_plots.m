@@ -4,11 +4,6 @@ function batch_model_plots(model_names,filename,model_names_train,filename_train
 if nargin < 3 || isempty(model_names_train); model_names_train = model_names; end
 if nargin < 4 || isempty(filename_train); filename_train = filename; end
 
-mypath = fileparts(which('changepoint_bayesian_nll'));
-fits_path = [mypath filesep 'fits'];
-addpath(fits_path);
-addpath([mypath filesep 'utils']);
-
 close all;
 
 % Models to be fitted
@@ -41,19 +36,14 @@ for iModel = 1:numel(model_names)
         % Look for psychometric model of the TEST data
         params = load_model_fit(filename,model_names{iModel});        
     else
-        % Look for training model in TRAINING fits
-        params_train = load_model_fit(filename_train,model_names_train{iModel});
-        
-        % If training and test models are different, transfer parameters
-        if ~strcmp(filename,filename_train)    
-            theta = params_train.theta;        
-            params = params_new(model_names{iModel},data);
-            params = setup_params(theta,params);
+        params_train = load_model_fit(filename_train,model_names_train{iModel});        
+        if ~strcmp(filename,filename_train)
+            % If training and test models are different, transfer parameters
+            params = params_transfer(params_train,model_names{iModel},filename);            
         else
             params = params_train;
         end
     end
-    
     % Plot
     subplot(plotrows,plotcols,iModel);
     plot_fit(data,params,params.model_desc);    
