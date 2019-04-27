@@ -11,9 +11,9 @@ if ~exist('train_set','var') || isempty(train_set)
     % train_set = 'endtrain';     % Train on last three training sessions (before biased protocol)
 end
 
-Nsamples = 1; % Approximate posterior samples for model predictions
-Nopts = 3;    % # optimization restarts for training fits
-Nopts_psy = 1; % # optimization restarts for fitting psychometric curves
+Nsamples = 20; % Approximate posterior samples for model predictions
+Nopts = 20;    % # optimization restarts for training fits
+Nopts_psy = 5; % # optimization restarts for fitting psychometric curves
 
 train_models = []; test_models = [];
 
