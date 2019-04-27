@@ -4,7 +4,7 @@ function X = get_posterior_samples(params,N)
 X = [];
 
 if isfield(params,'vbmc_fit') && ~isempty(params.vbmc_fit)
-    vp = vbmc_fit.diagnostics.best.vp;    
+    vp = params.vbmc_fit.diagnostics.best.vp;    
     X = vbmc_rnd(vp,N);
 end
 

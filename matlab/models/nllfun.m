@@ -36,18 +36,11 @@ for iParam = 1:Nparams
     else
         sigma = [];
     end
-
-    %----------------------------------------------------------------------
-    % Temporary patch for added parameter
-    %----------------------------------------------------------------------
-    if ~isfield(params1,'lapse_bias')
-        params1.lapse_bias = 0.5;
-    end
     
     if nargout == 1
         nLL(iParam) = params1.model_nLLfun(params1,data,sigma);
     else
-        [nLL(iParam),output(iParam)] = params1.model_nLLfun(params1,data,sigma);            
+        [nLL(iParam),output(iParam)] = params1.model_nLLfun(params1,data,sigma);
     end
 end
 
