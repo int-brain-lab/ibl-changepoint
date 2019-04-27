@@ -11,14 +11,16 @@ if ~exist('train_set','var') || isempty(train_set)
     % train_set = 'endtrain';     % Train on last three training sessions (before biased protocol)
 end
 
-Nsamples = 1;  % Approximate posterior samples for model predictions
-Nopts = 1;     % # optimization restarts for training fits
-Nopts_psy = 1; % # optimization restarts for fitting psychometric curves
+Nsamples = 20; % Approximate posterior samples for model predictions
+Nopts = 20;    % # optimization restarts for training fits
+Nopts_psy = 3; % # optimization restarts for fitting psychometric curves
 
 train_models = []; test_models = [];
 
 train_models{end+1} = 'psychofun';
+train_models{end+1} = 'omniscient_fixedbiasedlapse';
 train_models{end+1} = 'omniscient_doublenoise_fixedbiasedlapse';
+train_models{end+1} = 'changepoint_fixedbiasedlapse';
 train_models{end+1} = 'changepoint_doublenoise_fixedbiasedlapse';
 train_models{end+1} = 'omniscient';
 train_models{end+1} = 'omniscient_lapse';
@@ -28,7 +30,9 @@ train_models{end+1} = 'omniscient_doublenoise';
 train_models{end+1} = 'changepoint_doublenoise';
 
 test_models{end+1} = [];
+test_models{end+1} = 'omniscient_fixedbiasedlapse';
 test_models{end+1} = 'omniscient_doublenoise_fixedbiasedlapse';
+test_models{end+1} = 'changepoint_fixedbiasedlapse';
 test_models{end+1} = 'changepoint_doublenoise_fixedbiasedlapse';
 test_models{end+1} = 'changepoint';
 test_models{end+1} = 'changepoint_lapse';
