@@ -39,9 +39,15 @@ for iModel = 1:numel(model_names)
     
     if isempty(model_names{iModel}); continue; end
     
-    % Fit and save model
-    params = fit_model(model_names{iModel},data,Nopts,vbmc_flag,refit_flag);        
-    save_model_fit(data_filename,params);
+    % Maximum-likelihood fit
+    [params,~,refitted_flag] = fit_model(model_names{iModel},data,Nopts,0,refit_flag);       
+    if refitted_flag; save_model_fit(data_filename,params); end
+
+    % Variational inference (get approximate posterior and model evidence)
+    if vbmc_flag
+        [params,~,refitted_flag] = fit_model(model_names{iModel},data,Nopts,1,refit_flag);
+        if refitted_flag; save_model_fit(data_filename,params); end
+    end
         
     % Store fits
     modelfits.params{end+1} = params;

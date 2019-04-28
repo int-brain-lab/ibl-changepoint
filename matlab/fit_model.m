@@ -1,4 +1,4 @@
-function [params,data] = fit_model(model_name,data,Nopts,vbmc_flag,refit_flag,opt_init)
+function [params,data,refitted_flag] = fit_model(model_name,data,Nopts,vbmc_flag,refit_flag,opt_init)
 %FIT_MODEL Fit model MODEL_NAME to dataset DATA.
 
 % # restarts for optimization procedure (maximum-likelihood estimation)
@@ -19,6 +19,8 @@ if iscell(opt_init)
     end
     opt_init = temp;
 end
+
+refitted_flag = false;  % Check if model has been refitted
 
 % Load data file if passed as string
 if ischar(data); data = read_data_from_csv(data); end
@@ -82,6 +84,8 @@ if isempty(params) || refit_flag
     [nll_best,idx_best] = min(nll);
     x_best = x(idx_best,:);
     params = setup_params(x_best,params);
+    
+    refitted_flag = true;
 end
 
 if vbmc_flag
@@ -120,6 +124,7 @@ if vbmc_flag
         vbmc_fit.diagnostics.stats = stats;
         
         params.vbmc_fit = vbmc_fit;
+        refitted_flag = true;
     end
 end
 
