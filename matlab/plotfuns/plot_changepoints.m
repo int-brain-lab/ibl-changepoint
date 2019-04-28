@@ -8,6 +8,8 @@ if nargin < 5 || isempty(fitinfo_flag); fitinfo_flag = true; end
 
 fontsize = 14;
 
+if ischar(data); data = read_data_from_csv(data); end
+
 if ~isempty(params)
     [~,output] = nllfun([],params,data);
 
@@ -79,7 +81,8 @@ end
 
 
 contrast_groups = {[1 2 3], [4 5]};
-contrast_color = linspace(0,0.6,numel(contrast_groups))'*[0.5 0.5 1];
+contrast_color{1} = linspace(0,0.6,numel(contrast_groups))'*[0.5 0.5 1];
+contrast_color{2} = linspace(0.4,0.8,numel(contrast_groups))'*[1 0.5 0.5];
 
 legtext = {'low contrasts', 'high contrasts'};
 
@@ -88,44 +91,45 @@ plot([0 0],[0,1],'k--','LineWidth',1); hold on;
 for iContrast = 1:numel(contrast_groups)
     cc = contrast_groups{iContrast};
     
-    match = sum(sum(tab_match(:,:,cc,1),1),3);
-    total = sum(sum(tab_counts(:,:,cc,1),1),3);    
-    match_model = sum(sum(tab_match_model(:,:,cc,1),1),3);
-    
-    %match = sum(sum(tab_match(:,:,iContrast,:),1),4);
-    %total = sum(sum(tab_counts(:,:,iContrast,:),1),4);
-    offset = -N+1:N;
-    idx = total > 0;
-    
-    match = match(idx); total = total(idx); offset = offset(idx);
-    
-    p = match ./ total;
-    s = sqrt(p.*(1-p))./sqrt(total);
-    p_model = match_model ./ total;
-    
-    col = contrast_color(iContrast,:);
-        
-    legtext{iContrast} = [legtext{iContrast} ' ('];
-    for i = 1:numel(cc)
-        legtext{iContrast} = [legtext{iContrast} num2str(data.contrasts_vec(cc(i))*100,'%.3g') '%'];    
-        if i < numel(cc); legtext{iContrast} = [legtext{iContrast} ', ']; end
-    end
-    legtext{iContrast} = [legtext{iContrast} ')'];
-    
-    if ~isempty(params)        
-%        errorbar((1:numel(cc_vec))+offset,model_mean,model_stderr,...
-%            'LineStyle','none','LineWidth',2,'Color',col,'capsize',0); hold on;
-        h(iContrast+numel(contrast_groups)) = plot(offset,p_model,...
-            'LineStyle','-','LineWidth',2,'Color',col);
-        legtext{iContrast+numel(contrast_groups)} = legtext{iContrast};
-    end
+    for j = 1:2
+        match = sum(sum(tab_match(:,:,cc,j),1),3);
+        total = sum(sum(tab_counts(:,:,cc,j),1),3);    
+        match_model = sum(sum(tab_match_model(:,:,cc,j),1),3);
 
-    errorbar(offset,p,s,...
-        'LineStyle','none','LineWidth',2,'Color',col,'capsize',0); hold on;
-    h(iContrast) = plot(offset,p,...
-        'LineStyle','none','LineWidth',1,'Marker','o','Color',col,'MarkerFaceColor',col,'MarkerEdgeColor',[1 1 1]); hold on;
+        %match = sum(sum(tab_match(:,:,iContrast,:),1),4);
+        %total = sum(sum(tab_counts(:,:,iContrast,:),1),4);
+        offset = -N+1:N;
+        idx = total > 0;
+
+        match = match(idx); total = total(idx); offset = offset(idx);
+
+        p = match ./ total;
+        s = sqrt(p.*(1-p))./sqrt(total);
+        p_model = match_model ./ total;
+
+        col = contrast_color{j}(iContrast,:);
+
+        legtext{iContrast} = [legtext{iContrast} ' ('];
+        for i = 1:numel(cc)
+            legtext{iContrast} = [legtext{iContrast} num2str(data.contrasts_vec(cc(i))*100,'%.3g') '%'];    
+            if i < numel(cc); legtext{iContrast} = [legtext{iContrast} ', ']; end
+        end
+        legtext{iContrast} = [legtext{iContrast} ')'];
+
+        if ~isempty(params)        
+    %        errorbar((1:numel(cc_vec))+offset,model_mean,model_stderr,...
+    %            'LineStyle','none','LineWidth',2,'Color',col,'capsize',0); hold on;
+            h(iContrast+numel(contrast_groups)) = plot(offset,p_model,...
+                'LineStyle','-','LineWidth',2,'Color',col);
+            legtext{iContrast+numel(contrast_groups)} = legtext{iContrast};
+        end
+
+        errorbar(offset,p,s,...
+            'LineStyle','none','LineWidth',2,'Color',col,'capsize',0); hold on;
+        h(iContrast) = plot(offset,p,...
+            'LineStyle','none','LineWidth',1,'Marker','o','Color',col,'MarkerFaceColor',col,'MarkerEdgeColor',[1 1 1]); hold on;
     
-    
+    end    
 end
 
 % %% Decorate plot

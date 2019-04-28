@@ -162,6 +162,10 @@ else
     if contains(model_name,'fixedprior')
         params.fixed_prior = 0.5;
         extra_features{end+1} = 'fixed prior';
+    elseif contains(model_name,'fixedfreeprior')
+        params.fixed_prior = 0.5;
+        params.names{end+1} = 'fixed_prior';
+        extra_features{end+1} = 'fixed free prior';        
     end
     
     %% Parameters for change-point observer only

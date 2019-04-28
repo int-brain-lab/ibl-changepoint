@@ -104,6 +104,8 @@ while iParam <= numel(params.names)
                 bvec = [1e-6,0.5,0.01,0.49,0.2];
             case {'prob_high'}
                 bvec = [0.5,1-1e-6,0.51,0.99,0.8];
+            case {'fixed_prior'}
+                bvec = [1e-6,1-1e-6,0.01,0.99,0.5];
         end
         
         bounds.LB = [bounds.LB,bvec(1)*ones(1,pnum)];
