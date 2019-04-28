@@ -1,4 +1,4 @@
-function [params,data,refitted_flag] = fit_model(model_name,data,Nopts,vbmc_flag,refit_flag,opt_init)
+function [params,data,refitted_flag] = fit_model(model_name,data,Nopts,vbmc_flag,refit_flags,opt_init)
 %FIT_MODEL Fit model MODEL_NAME to dataset DATA.
 
 % # restarts for optimization procedure (maximum-likelihood estimation)
@@ -7,8 +7,8 @@ if nargin < 3 || isempty(Nopts); Nopts = 10; end
 % Get approximate posteriors with Variational Bayesian Monte Carlo
 if nargin < 4 || isempty(vbmc_flag); vbmc_flag = false; end
 
-% Force refit even if fit already exists
-if nargin < 5 || isempty(refit_flag); refit_flag = false; end
+% Force refits even if fit already exists
+if nargin < 5 || isempty(refit_flags); refit_flags = false; end
 
 % Starting point(s) for the first fit
 if nargin < 6; opt_init = []; end
@@ -29,7 +29,7 @@ if ischar(data); data = read_data_from_csv(data); end
 params = load_model_fit(data.name,model_name);
 
 %% Maximum likelihood fit
-if isempty(params) || refit_flag
+if isempty(params) || refit_flags(1)
     params = params_new(model_name,data);   % Initialize model/params struct
     bounds = setup_params([],params);       % Get parameter bounds
 
@@ -89,7 +89,7 @@ if isempty(params) || refit_flag
 end
 
 if vbmc_flag
-    if ~isfield(params,'vbmc_fit') || isempty(params.vbmc_fit) || refit_flag    
+    if ~isfield(params,'vbmc_fit') || isempty(params.vbmc_fit) || refit_flags(min(2,end))   
         if isfield(params,'vbmc_fit'); params = rmfield(params,'vbmc_fit'); end
         
         bounds = setup_params([],params);       % Get parameter bounds    

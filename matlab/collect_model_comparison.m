@@ -20,6 +20,8 @@ tab.exitflag = NaN(Ndata,Nmodels);
 
 
 for iData = 1:Ndata
+    fprintf('%s ',data_list{iData}); if mod(iData,10) == 0; fprintf('\n'); end
+    
     for iModel = 1:Nmodels
         params = load_model_fit(data_list{iData},model_list{iModel});
         if isempty(params); continue; end
