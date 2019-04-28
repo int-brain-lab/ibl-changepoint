@@ -29,7 +29,7 @@ fi
 
 PARAMS=$(awk "NR==${IID} {print;exit}" ${INPUTFILE})
 
-echo ${PARAMS} ${TRAINSET} ${VERBOSE}
+echo ${PARAMS} ${TRAINSET} ${SECONDPARAM}
 
 cat<<EOF | matlab -nodisplay
 ibl_changepoint_add2path
@@ -42,11 +42,15 @@ switch runtype
 		train_set='${TRAINSET}'
 		fit_all_unbiased
 	case 'fit'
-		model_names = {'changepoint_doublenoise_loadnoiseendtrain_runlength_probs','changepoint_doublenoise_loadnoiseunbiased_runlength_probs'};
-		Nopts = 10;
+		% model_names = {'changepoint_doublenoise_runlength_probs'};
+		% model_names = {'changepoint_doublenoise'};
+		% model_names = {'omniscient_fixedprior_doublenoise'};
+		model_names = {'$SECONDPARAM'};
+		mouse_name = '$PARAMS';
+		Nopts = [5,5];
 		vbmc_flag = true;
-		refit_flag = true;
-		modelfits = batch_model_fit(model_names,'$PARAMS',Nopts,vbmc_flag,refit_flag);
+		refit_flags = [false,true];
+		modelfits = batch_model_fit(model_names,mouse_name,Nopts,vbmc_flag,refit_flags);
 end
 
 EOF

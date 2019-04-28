@@ -8,8 +8,15 @@ JOBSCRIPT="${BASEDIR}/scripts/myjob.sh"
 TRAINSET="unbiased"
 RUNTYPE=${1}
 
+if [ -z "$2" ]
+then
+	SECONDPARAM="[]"
+else
+	SECONDPARAM=${2}
+fi
+
 #Job parameters
-RUN=$TRAINSET
+RUN=$RUNTYPE
 MICELIST="apr2019"
 INPUTFILE="${BASEDIR}/scripts/joblist_${MICELIST}.txt"
 MAXID=$(sed -n $= ${INPUTFILE})
@@ -37,4 +44,4 @@ cd ${WORKDIR}
 JOBNAME=${SHORTNAME}${RUN}
 
 # running on Prince
-sbatch --error=slurm-%A_%a.err --verbose --array=${JOBLIST} --mail-type=FAIL --mail-user=${USER}@nyu.edu --mem=${MEM} --time=${RUNTIME} --nodes=${NODES} --ntasks-per-node=${PPN} --export=PROJECT=${PROJECT},RUN=${RUN},TRAINSET=${TRAINSET},RUNTYPE=${RUNTYPE},MAXID=$MAXID,WORKDIR=$WORKDIR,USER=$USER,MAXRT=$MAXRT,INPUTFILE=${INPUTFILE},VERBOSE=${VERBOSE},MAXFUNMULT=${MAXFUNMULT} --job-name=${JOBNAME} ${JOBSCRIPT}
+sbatch --error=slurm-%A_%a.err --verbose --array=${JOBLIST} --mail-type=FAIL --mail-user=${USER}@nyu.edu --mem=${MEM} --time=${RUNTIME} --nodes=${NODES} --ntasks-per-node=${PPN} --export=PROJECT=${PROJECT},RUN=${RUN},TRAINSET=${TRAINSET},SECONDPARAM=${SECONDPARAM},RUNTYPE=${RUNTYPE},MAXID=$MAXID,WORKDIR=$WORKDIR,USER=$USER,MAXRT=$MAXRT,INPUTFILE=${INPUTFILE},VERBOSE=${VERBOSE},MAXFUNMULT=${MAXFUNMULT} --job-name=${JOBNAME} ${JOBSCRIPT}
