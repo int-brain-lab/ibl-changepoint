@@ -3,7 +3,9 @@ function modelfits = batch_model_fit(model_names,data_filename,Nopts,vbmc_flag,r
 
 % TODO: Change saving method to separate files for each data/model
 
-if nargin < 3 || isempty(Nopts); Nopts = 10; end
+if nargin < 3 || isempty(Nopts); Nopts = [10,5]; end
+if numel(Nopts) > 1; Nvbmc = Nopts(2); else; Nvbmc = ceil(Nopts(1)/2); end
+
 if nargin < 4 || isempty(vbmc_flag); vbmc_flag = false; end
 if nargin < 5 || isempty(refit_flags); refit_flags = false(1,2); end
 
@@ -40,12 +42,12 @@ for iModel = 1:numel(model_names)
     if isempty(model_names{iModel}); continue; end
     
     % Maximum-likelihood fit
-    [params,~,refitted_flag] = fit_model(model_names{iModel},data,Nopts,0,refit_flags);       
+    [params,~,refitted_flag] = fit_model(model_names{iModel},data,Nopts(1),0,refit_flags);       
     if refitted_flag; save_model_fit(data_filename,params); end
 
     % Variational inference (get approximate posterior and model evidence)
     if vbmc_flag
-        [params,~,refitted_flag] = fit_model(model_names{iModel},data,Nopts,1,refit_flags);
+        [params,~,refitted_flag] = fit_model(model_names{iModel},data,[Nopts(1),Nvbmc],1,refit_flags);
         if refitted_flag; save_model_fit(data_filename,params); end
     end
         

@@ -1,8 +1,9 @@
 function [params,data,refitted_flag] = fit_model(model_name,data,Nopts,vbmc_flag,refit_flags,opt_init)
 %FIT_MODEL Fit model MODEL_NAME to dataset DATA.
 
-% # restarts for optimization procedure (maximum-likelihood estimation)
-if nargin < 3 || isempty(Nopts); Nopts = 10; end
+% # restarts for fitting procedures (MLE and variational inference)
+if nargin < 3 || isempty(Nopts); Nopts = [10,5]; end
+if numel(Nopts) > 1; Nvbmc = Nopts(2); else; Nvbmc = ceil(Nopts(1)/2); end
 
 % Get approximate posteriors with Variational Bayesian Monte Carlo
 if nargin < 4 || isempty(vbmc_flag); vbmc_flag = false; end
@@ -55,7 +56,7 @@ if isempty(params) || refit_flags(1)
     % Fits all models but psychometric curves with BADS    
     bads_flag = ~contains(params.model_name,{'psychofun'});
 
-    for iOpt = 1:Nopts
+    for iOpt = 1:Nopts(1)
         if size(opt_init,1) >= iOpt     % Use provided starting points
             x0 = opt_init(iOpt,:);
         else
@@ -64,7 +65,7 @@ if isempty(params) || refit_flags(1)
             else
                 x0 = rand(1,numel(bounds.PLB)).*(bounds.PUB-bounds.PLB) + bounds.PLB;
             end
-            if ~isempty(x0_base) && iOpt <= ceil(Nopts/3)
+            if ~isempty(x0_base) && iOpt <= ceil(Nopts(1)/3)
                 x0(~isnan(x0_base)) = x0_base(~isnan(x0_base));
             end
         end
@@ -107,7 +108,7 @@ if vbmc_flag
         logprior = @(x) log(msplinetrapezpdf(x,bounds.LB,bounds.PLB,bounds.PUB,bounds.UB));
         
         vbmc_fit = [];
-        for iOpt = 1:ceil(Nopts/2)
+        for iOpt = 1:Nvbmc
             [vp,~,~,~,output] = ...
                 vbmc(@(x_) -nllfun(x_,params,data)+logprior(x_), ...
                 x0,bounds.LB,bounds.UB,bounds.PLB,bounds.PUB,vbmc_opts);
