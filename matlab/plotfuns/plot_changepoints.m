@@ -60,19 +60,44 @@ for iC = 1:size(cps,1)
         else
             match_column = 2;
         end
-                
-        tab_counts(iC,tab_index,data.contrasts_idx(idx),match_column) = tab_counts(tab_index) + 1;
-        % Response matches block type
-        if (data.resp_obs(idx) > 0 && p_block < 0.5) || (data.resp_obs(idx) < 0 && p_block > 0.5)
-            tab_match(iC,tab_index,data.contrasts_idx(idx),match_column) = tab_match(tab_index) + 1;          
-        end
-        
-        if ~isempty(params)
-            if p_block > 0.5
-                tab_match_model(iC,tab_index,data.contrasts_idx(idx),match_column) = tab_match_model(tab_index) + mean(resp_model(idx,:),2);
-            else
-                tab_match_model(iC,tab_index,data.contrasts_idx(idx),match_column) = tab_match_model(tab_index) + 1 - mean(resp_model(idx,:),2);
+                        
+        if 0
+            tab_counts(iC,tab_index,data.contrasts_idx(idx),match_column) = tab_counts(tab_index) + 1;
+            % Response matches block type
+            if (data.resp_obs(idx) > 0 && p_block < 0.5) || (data.resp_obs(idx) < 0 && p_block > 0.5)
+                tab_match(iC,tab_index,data.contrasts_idx(idx),match_column) = tab_match(tab_index) + 1;          
             end
+
+            if ~isempty(params)
+                if p_block > 0.5
+                    tab_match_model(iC,tab_index,data.contrasts_idx(idx),match_column) = tab_match_model(tab_index) + mean(resp_model(idx,:),2);
+                else
+                    tab_match_model(iC,tab_index,data.contrasts_idx(idx),match_column) = tab_match_model(tab_index) + 1 - mean(resp_model(idx,:),2);
+                end
+            end
+        else
+            tab_counts(iC,tab_index,data.contrasts_idx(idx),match_column) = ...
+                tab_counts(iC,tab_index,data.contrasts_idx(idx),match_column) + 1;
+            % Response matches block type
+            if (data.resp_obs(idx) > 0 && p_block < 0.5) || (data.resp_obs(idx) < 0 && p_block > 0.5)
+                tab_match(iC,tab_index,data.contrasts_idx(idx),match_column) = ...
+                    tab_match(iC,tab_index,data.contrasts_idx(idx),match_column) + 1;          
+            end
+
+            if ~isempty(params)
+                if p_block > 0.5
+                    tab_match_model(iC,tab_index,data.contrasts_idx(idx),match_column) = ...
+                        tab_match_model(iC,tab_index,data.contrasts_idx(idx),match_column) + mean(resp_model(idx,:),2);
+                else
+                    tab_match_model(iC,tab_index,data.contrasts_idx(idx),match_column) = ...
+                        tab_match_model(iC,tab_index,data.contrasts_idx(idx),match_column) + 1 - mean(resp_model(idx,:),2);
+                end
+            end
+            
+            
+            
+            
+            
         end
         
     end    
@@ -80,11 +105,11 @@ for iC = 1:size(cps,1)
 end
 
 
-contrast_groups = {[1 2 3], [4 5]};
-contrast_color{1} = linspace(0,0.6,numel(contrast_groups))'*[0.5 0.5 1];
-contrast_color{2} = linspace(0.4,0.8,numel(contrast_groups))'*[1 0.5 0.5];
+contrast_groups = {[5 4], [3 2], 1};
+contrast_color{1} = linspace(0.2,0.8,numel(contrast_groups))'*[1 1 0.5];
+contrast_color{2} = linspace(0.4,1,numel(contrast_groups))'*[0.5 0.5 1];
 
-legtext = {'low contrasts', 'high contrasts'};
+legtext = {'high contrasts', 'low contrasts', 'zero contrast', 'high contrasts', 'low contrasts'};
 
 plot([0 0],[0,1],'k--','LineWidth',1); hold on;
 
@@ -92,6 +117,8 @@ for iContrast = 1:numel(contrast_groups)
     cc = contrast_groups{iContrast};
     
     for j = 1:2
+        if j == 2 && isscalar(cc) && cc == 1; continue; end
+        
         match = sum(sum(tab_match(:,:,cc,j),1),3);
         total = sum(sum(tab_counts(:,:,cc,j),1),3);    
         match_model = sum(sum(tab_match_model(:,:,cc,j),1),3);
@@ -109,44 +136,60 @@ for iContrast = 1:numel(contrast_groups)
 
         col = contrast_color{j}(iContrast,:);
 
-        legtext{iContrast} = [legtext{iContrast} ' ('];
-        for i = 1:numel(cc)
-            legtext{iContrast} = [legtext{iContrast} num2str(data.contrasts_vec(cc(i))*100,'%.3g') '%'];    
-            if i < numel(cc); legtext{iContrast} = [legtext{iContrast} ', ']; end
-        end
-        legtext{iContrast} = [legtext{iContrast} ')'];
-
-        if ~isempty(params)        
+        h_idx1 = iContrast + (j-1)*numel(contrast_groups);
+        
+        if ~isempty(params)
+            h_idx2 = iContrast + (j-1)*numel(contrast_groups) +numel(contrast_groups)*2-1;
     %        errorbar((1:numel(cc_vec))+offset,model_mean,model_stderr,...
     %            'LineStyle','none','LineWidth',2,'Color',col,'capsize',0); hold on;
-            h(iContrast+numel(contrast_groups)) = plot(offset,p_model,...
+            h(h_idx2) = plot(offset,p_model,...
                 'LineStyle','-','LineWidth',2,'Color',col);
-            legtext{iContrast+numel(contrast_groups)} = legtext{iContrast};
+            legtext{h_idx2} = ['model, ' legtext{h_idx1}];
         end
 
+        if j == 1        
+            legtext{h_idx1} = [legtext{h_idx1} ' ('];
+            for i = 1:numel(cc)
+                legtext{h_idx1} = [legtext{h_idx1} num2str(data.contrasts_vec(cc(i))*100,'%.3g') '%'];    
+                if i < numel(cc); legtext{h_idx1} = [legtext{h_idx1} ', ']; end
+            end
+            legtext{h_idx1} = [legtext{h_idx1} ')'];
+        end
+        
+        legtext{h_idx1} = ['data, ' legtext{h_idx1}];
+        
         errorbar(offset,p,s,...
             'LineStyle','none','LineWidth',2,'Color',col,'capsize',0); hold on;
-        h(iContrast) = plot(offset,p,...
-            'LineStyle','none','LineWidth',1,'Marker','o','Color',col,'MarkerFaceColor',col,'MarkerEdgeColor',[1 1 1]); hold on;
+        if iContrast == 3; marker = 's'; else; marker = 'o'; end
+        
+        h(h_idx1) = plot(offset,p,...
+            'LineStyle','none','LineWidth',1,'Marker',marker,'Color',col,'MarkerFaceColor',col,'MarkerEdgeColor',[1 1 1]); hold on;
     
-    end    
+    end
 end
 
 % %% Decorate plot
-xlim([-N+0.5,N+0.5]);
-ylim([0 1]);
 set(gca,'TickDir','out');
 box off;
 set(gcf,'Color','w');
-set(gca,'Xtick',-N+1:N);
+xticks = -N:N;
+for iLabel = 1:numel(xticks)
+    if mod(xticks(iLabel),5) == 0; xticklabel{iLabel} = num2str(xticks(iLabel)); else xticklabel{iLabel} = ''; end
+end
+set(gca,'Xtick',xticks,'XTickLabel',xticklabel);
 set(gca,'Ytick',0:0.5:1);
+xlim([min(xticks)-0.5,max(xticks)+0.5]);
+ylim([0 1]);
 % set(gca,'XTickLabel',xtext);
 xlabel('Trial with respect to change point','FontSize',fontsize);
-ylabel('P(match change-point block)','FontSize',fontsize);
+ylabel('P(response matches block after change-point)','FontSize',fontsize);
 if ~isempty(titlestr); title(titlestr,'FontSize',fontsize); end
  
+text(1.05,0.95,'Matching stimuli','Units','Normalized','Fontsize',fontsize);
+text(1.05,0.05,'Non-matching stimuli','Units','Normalized','Fontsize',fontsize);
+
 if plot_data_flag
      hl = legend(h,legtext{:});
-     set(hl,'Location','Best','Box','off','FontSize',fontsize);
+     set(hl,'Location','eastoutside','Box','off','FontSize',fontsize);
 end
 

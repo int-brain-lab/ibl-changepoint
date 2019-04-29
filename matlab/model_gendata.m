@@ -31,6 +31,6 @@ data_tab(:,7) = data_tab(:,6) == sign(data_tab(:,5));
 % Reaction times are not modified
 
 % Format simulated data
-gendata = format_data(data_tab,data.name);
+gendata = format_data(data_tab,data.filename,data.fullname);
 
 end

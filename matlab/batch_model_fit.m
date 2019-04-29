@@ -1,4 +1,4 @@
-function modelfits = batch_model_fit(model_names,data_filename,Nopts,vbmc_flag,refit_flags)
+function modelfits = batch_model_fit(model_names,data_name,Nopts,vbmc_flag,refit_flags)
 %BATCH_MODEL_FIT Fit a batch of models and save results.
 
 % TODO: Change saving method to separate files for each data/model
@@ -32,7 +32,7 @@ switch numel(model_names)
 end
 
 % Load data file
-data = read_data_from_csv(data_filename);
+data = read_data_from_csv(data_name);
 
 modelfits.data = data;
 modelfits.params = [];
@@ -41,15 +41,9 @@ for iModel = 1:numel(model_names)
     
     if isempty(model_names{iModel}); continue; end
     
-    % Maximum-likelihood fit
-    [params,~,refitted_flag] = fit_model(model_names{iModel},data,Nopts(1),0,refit_flags);       
-    if refitted_flag; save_model_fit(data_filename,params); end
-
-    % Variational inference (get approximate posterior and model evidence)
-    if vbmc_flag
-        [params,~,refitted_flag] = fit_model(model_names{iModel},data,[Nopts(1),Nvbmc],1,refit_flags);
-        if refitted_flag; save_model_fit(data_filename,params); end
-    end
+    % Fit models
+    params = fit_model(model_names{iModel},data, ...
+        [Nopts(1),Nvbmc],vbmc_flag,refit_flags,[],1);       
         
     % Store fits
     modelfits.params{end+1} = params;
@@ -60,6 +54,6 @@ for iModel = 1:numel(model_names)
 end
 
 mypath = which('savefigure.m');
-savefigure([fileparts(mypath) filesep() data_filename]);
+savefigure([fileparts(mypath) filesep() data_name]);
 
 end

@@ -4,7 +4,7 @@ if nargin < 1; data_list = []; end
 if nargin < 2; model_list = []; end
 
 if isempty(data_list); data_list = get_mice_list(); end
-if isempty(model_list); model_list = {'omniscient_fixedprior_doublenoise','changepoint_doublenoise','changepoint_doublenoise_runlength_probs'}; end
+if isempty(model_list); model_list = {'omniscient_fixedprior_doublenoise','changepoint_doublenoise','changepoint_doublenoise_runlength_probs','omniscient_fixedfreeprior_doublenoise_lapse','changepoint_doublenoise_lapse','changepoint_doublenoise_runlength_probs_lapse'}; end
 
 Ndata = numel(data_list);
 Nmodels = numel(model_list);
@@ -36,11 +36,11 @@ for iData = 1:Ndata
         tab.aic(iData,iModel) = 2*nLL + 2*Nparams;
         tab.bic(iData,iModel) = 2*nLL + log(Ntrials)*Nparams;
         
-        if isfield(params,'vbmc_fit')
-            if ~isempty(params.vbmc_fit.diagnostics.best)
-                tab.elbo(iData,iModel) = params.vbmc_fit.diagnostics.best.elbo;
+        if isfield(params,'vbmc_fits')
+            if ~isempty(params.vbmc_fits.diagnostics.best)
+                tab.elbo(iData,iModel) = params.vbmc_fits.diagnostics.best.elbo;
             end
-            tab.exitflag(iData,iModel) = params.vbmc_fit.diagnostics.exitflag;
+            tab.exitflag(iData,iModel) = params.vbmc_fits.diagnostics.exitflag;
         end
     end
 end

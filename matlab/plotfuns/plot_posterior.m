@@ -1,7 +1,7 @@
 function plot_posterior(params)
 %PLOT_POSTERIOR Plot (approximate) parameter posterior.
 
-if ~isfield(params,'vbmc_fit') || isempty(params.vbmc_fit)
+if ~isfield(params,'vbmc_fits') || isempty(params.vbmc_fits)
     error('No approximate posterior in PARAMS struct!');
 end
 

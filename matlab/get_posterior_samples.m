@@ -3,8 +3,8 @@ function X = get_posterior_samples(params,N)
 
 X = [];
 
-if isfield(params,'vbmc_fit') && ~isempty(params.vbmc_fit)
-    vp = params.vbmc_fit.diagnostics.best.vp;    
+if isfield(params,'vbmc_fits') && ~isempty(params.vbmc_fits)
+    vp = params.vbmc_fits.diagnostics.best.vp;    
     X = vbmc_rnd(vp,N);
 end
 

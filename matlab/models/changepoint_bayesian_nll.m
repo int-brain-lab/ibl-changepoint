@@ -15,7 +15,7 @@ if numel(sessions) > 1
     for iSession = 1:numel(sessions)
         idx_session = data.tab(:,2) == sessions(iSession);
         data1_tab = data.tab(idx_session,:);
-        data1 = format_data(data1_tab,[data.name '_session' num2str(sessions(iSession))]);
+        data1 = format_data(data1_tab,data.filename,[data.fullname '_session' num2str(sessions(iSession))]);
         if nargout > 1
             [nLL(iSession),output1] = changepoint_bayesian_nll(params,data1,sigma(idx_session,:));
             if isempty(output)

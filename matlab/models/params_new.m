@@ -95,7 +95,7 @@ else
         idx = find([str '_'] == '_',1);        
         noisefile = str(1:idx-1);
 
-        params_noise = load_model_fit([data.name '_' noisefile],noise_model_name);
+        params_noise = load_model_fit([data.fullname '_' noisefile],noise_model_name);
         
         if contains(model_name,'altnoise')
             params.precision = params_noise.precision;

@@ -1,8 +1,9 @@
-function data = format_data(data_tab,name)
+function data = format_data(data_tab,filename,fullname)
 %FORMAT_DATA Create DATA struct from a data matrix and file name NAME.
 
 data.tab = data_tab;
-data.name = name;
+data.filename = filename;
+data.fullname = fullname;
 
 data.p_true = data_tab(:,3);
 data.contrasts = data_tab(:,4);
