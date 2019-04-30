@@ -1,8 +1,9 @@
 % Plot parameters from fitted changepoint model
 
 vp = [];
-mice_list = get_mice_list();
-model_name = 'changepoint_doublenoise_runlength_probs_lapse';
+mice_list = get_mice_list([],'half2');
+% model_name = 'changepoint_doublenoise_runlength_probs_lapse';
+model_name = 'changepoint_doublenoise_runlength_probs';
 theta = [];
 
 for iMouse = 1:numel(mice_list)
@@ -20,6 +21,11 @@ for iMouse = 1:numel(mice_list)
             X = get_posterior_samples(params,1e6); % cornerplot(X)
             theta(iMouse,:) = mean(X,1);
         else
+            
+            if isempty(params.mle_fits.nll_best)
+                [nLL,idx] = min(params.mle_fits.nll);
+                params.theta = params.mle_fits.x(idx,:);
+            end            
             theta(iMouse,:) = params.theta;
         end
     end

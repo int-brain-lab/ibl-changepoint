@@ -96,22 +96,13 @@ for iOpt = 1:Nopts(1)
     params.mle_fits.nll(iOpt) = fval;
     
     refitted_flag = true;
-    params.mle_fits.x_best = [];
-    params.mle_fits.nll_best = [];
+    params = compute_mle_stats(params);
     
     if save_flag; save_model_fit(data.fullname,params); end
 end
 
 params.mle_fits.x
 params.mle_fits.nll
-[nll_best,idx_best] = min(params.mle_fits.nll);
-x_best = params.mle_fits.x(idx_best,:);
-params = setup_params(x_best,params);
-
-params.mle_fits.x_best = x_best;
-params.mle_fits.nll_best = nll_best;
-
-if refitted_flag && save_flag; save_model_fit(data.fullname,params); end
 
 if vbmc_flag
     
@@ -148,22 +139,36 @@ if vbmc_flag
         params.vbmc_fits.vps{iOpt} = vp;
         params.vbmc_fits.outputs{iOpt} = output;
         
-        params.vbmc_fits.diagnostics = [];
         refitted_flag = true;
-        if save_flag; save_model_fit(data.fullname,params); end
-    end
-
-    if refitted_flag
-        [exitflag,best,idx_best,stats] = vbmc_diagnostics(params.vbmc_fits.vps);
-        params.vbmc_fits.diagnostics.exitflag = exitflag;
-        params.vbmc_fits.diagnostics.best = best;
-        params.vbmc_fits.diagnostics.idx_best = idx_best;
-        params.vbmc_fits.diagnostics.stats = stats;
+        params = compute_vbmc_stats(params);
         
         if save_flag; save_model_fit(data.fullname,params); end
     end
 
     
 end
+
+end
+
+%--------------------------------------------------------------------------
+function params = compute_mle_stats(params)
+
+[nll_best,idx_best] = min(params.mle_fits.nll);
+x_best = params.mle_fits.x(idx_best,:);
+params = setup_params(x_best,params);
+
+params.mle_fits.x_best = x_best;
+params.mle_fits.nll_best = nll_best;
+
+end
+
+%--------------------------------------------------------------------------
+function params = compute_vbmc_stats(params)
+
+[exitflag,best,idx_best,stats] = vbmc_diagnostics(params.vbmc_fits.vps);
+params.vbmc_fits.diagnostics.exitflag = exitflag;
+params.vbmc_fits.diagnostics.best = best;
+params.vbmc_fits.diagnostics.idx_best = idx_best;
+params.vbmc_fits.diagnostics.stats = stats;
 
 end
