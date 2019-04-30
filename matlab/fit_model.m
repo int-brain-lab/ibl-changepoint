@@ -117,6 +117,7 @@ if vbmc_flag
     % vbmc_opts.Plot = 'on';
     vbmc_opts.NSgpMaxMain = 0;
     vbmc_opts.RetryMaxFunEvals = vbmc_opts.MaxFunEvals;
+    vbmc_opts.RankCriterion = true;     % Will become default soon
 
 %         w.SearchCacheFrac = 0.1; w.HPDSearchFrac = 0.9; w.HeavyTailSearchFrac = 0; w.MVNSearchFrac = 0; w.SearchAcqFcn = @vbmc_acqpropregt; w.StopWarmupThresh = 0.1; w.SearchCMAESVPInit = false;
 %         vbmc_opts.WarmupOptions = w; vbmc_opts.TolStableWarmup = 5; vbmc_opts.FastWarmup = true; vbmc_opts.NSgpMaxWarmup = 8;
