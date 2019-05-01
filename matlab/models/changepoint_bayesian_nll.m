@@ -1,10 +1,14 @@
-function [nLL,output] = changepoint_bayesian_nll(params,data,sigma)
+function [nLL,output] = changepoint_bayesian_nll(params,data,mu,sigma)
 %CHANGEPOINT_BAYESIAN_NLL Bayesian online changepoint detection observer.
 % (Documentation to be written.)
 %
 % Author:   Luigi Acerbi
 % Email:    luigi.acerbi@gmail.com
 % Date:     Apr/4/2019
+
+% Potentially different SIGMA for left and right stimuli, copy if only one
+% is passed
+if size(sigma,2) == 1; sigma = repmat(sigma,[1,2]); end
 
 sessions = unique(data.tab(:,2));
 
@@ -17,7 +21,7 @@ if numel(sessions) > 1
         data1_tab = data.tab(idx_session,:);
         data1 = format_data(data1_tab,data.filename,[data.fullname '_session' num2str(sessions(iSession))]);
         if nargout > 1
-            [nLL(iSession),output1] = changepoint_bayesian_nll(params,data1,sigma(idx_session,:));
+            [nLL(iSession),output1] = changepoint_bayesian_nll(params,data1,mu(idx_session,:),sigma(idx_session,:));
             if isempty(output)
                 output = output1;
             else
@@ -27,7 +31,7 @@ if numel(sessions) > 1
                 output.resp_model = [output.resp_model; output1.resp_model];
             end
         else
-            nLL(iSession) = changepoint_bayesian_nll(params,data1,sigma(idx_session,:));            
+            nLL(iSession) = changepoint_bayesian_nll(params,data1,mu(idx_session,:),sigma(idx_session,:));            
         end
     end
     nLL = sum(nLL);
@@ -37,9 +41,6 @@ if numel(sessions) > 1
     return;
 end
 
-MIN_P = 1e-4;   % Minimum lapse/error probability
-
-compute_nLL_flag = ~isempty(data.resp_obs);
 NumTrials = size(data.C,1);
 
 %% Assign observer model parameters
@@ -53,14 +54,6 @@ runlength_min = params.runlength_min;
 runlength_max = params.runlength_max;
 runlength_prior = str2func(params.runlength_prior);
 
-lapse_rate = max(MIN_P,params.lapse_rate);     % Minimum lapse to avoid numerical trouble
-lapse_bias = params.lapse_bias;
-softmax_eta = params.softmax_eta;
-softmax_bias = params.softmax_bias;
-
-% Potentially different SIGMA for left and right stimuli, copy if only one
-% is passed
-if size(sigma,2) == 1; sigma = repmat(sigma,[1,2]); end
 
 %% Initialize inference
 
@@ -86,45 +79,29 @@ Psi(1,1,:) = 1/Nprobs;
 Tmat(1,:,:) = params.Tmat;
 p_vec3(1,1,:) = p_vec;
 
-% Auxiliary variables for fitting
-if compute_nLL_flag
-    % Get measurement noise grid and pdf
-    [X,W] = get_noisy_measurements(data.S,sigma);
-end
-
 %% Begin loop over trials
 P = zeros(NumTrials+1,Nprobs);      % Posterior over state
 P(1,:) = ones(1,Nprobs)/Nprobs;
 last = zeros(NumTrials,size(post,1));
-PCx = [];
 
 for t = 1:NumTrials
     %t
-    if compute_nLL_flag; Xt = X(t,:); else; Xt = []; end    
-    [post,Psi,pi_post,PCxL] = bayesianOCPDupdate(Xt,data.C(t),post,Psi,Tmat,H,p_vec3,beta_hyp,data.mu,sigma(t,:));
+    [post,Psi,pi_post] = bayesianOCPDupdate(data.C(t),post,Psi,Tmat,H,p_vec3,beta_hyp);
     tt = nansum(post,2);
 
     % The predictive posterior is about the next trial
     P(t+1,:) = pi_post;
-    last(t,:) = tt/sum(tt);
-    
-    % Record conditional posterior
-    if compute_nLL_flag
-        if isempty(PCx); PCx = zeros(NumTrials,size(PCxL,2)); end
-        PCx(t,:) = PCxL;
-    end
+    last(t,:) = tt/sum(tt);    
 end
 
-%% Compute log likelihood
+%% Compute log likelihood and response probability
 
-% Compute predicted criterion
-% pL_t = sum(bsxfun(@times, P, p_vec(:)'),2);
-% pR_t = sum(bsxfun(@times, P, 1-p_vec(:)'), 2);
-         
-dhat = log(PCx./(1-PCx));   % Decision variable (log posterior odds)
+% Compute predictive posterior over Left
+priorL = sum(bsxfun(@times,P,p_vec(:)'),2);
+priorL = priorL(1:end-1); % Cut prediction for trial + 1
 
 % Compute negative log likelihood and probability of responding L
-[nLL,PChatL] = get_responses_nLL(dhat,softmax_eta,softmax_bias,lapse_rate,lapse_bias,W,data.resp_obs);
+[nLL,PChatL] = sdt_nll(data.S,mu,sigma,priorL,data.resp_obs,params);
 
 if nargout > 1
     % RMSE between predictive posterior probability and true category probability
@@ -138,11 +115,8 @@ end
 end
 
 %--------------------------------------------------------------------------
-function [post,Psi,pi_post,PCxL] = bayesianOCPDupdate(X,C,post,Psi,Tmat,H,p_vec,beta_hyp,mu,sigma)
+function [post,Psi,pi_post] = bayesianOCPDupdate(C,post,Psi,Tmat,H,p_vec,beta_hyp)
 %BAYESIANCPDUPDATE Bayesian online changepoint detection update
-
-    % Should I compute response probabilities?
-    compute_response_flag = ~isempty(mu) && ~isempty(sigma);
 
     %if mod(t,100) == 0
     %    t
@@ -155,23 +129,7 @@ function [post,Psi,pi_post,PCxL] = bayesianOCPDupdate(X,C,post,Psi,Tmat,H,p_vec,
     pi_post = bsxfun(@times, Psi, Tmat);
     predCatL(:,:) = sum(bsxfun(@times, pi_post, p_vec),3);
     predCatR(:,:) = sum(bsxfun(@times, pi_post, 1 - p_vec),3);
-    
-    %----------------------------------------------------------------------
-    % 2. Compute probability of response (only if requested)
-    if compute_response_flag
-        pxCatL = exp(-0.5*((X-mu(1))./sigma(1)).^2)/sigma(1);
-        pxCatR = exp(-0.5*((X-mu(2))./sigma(2)).^2)/sigma(2);
-
-        PCxL = nansum(nansum(bsxfun(@times,predCatL,post),2),1).*pxCatL;
-        PCxR = nansum(nansum(bsxfun(@times,predCatR,post),2),1).*pxCatR;    
-        PCxL = PCxL./(PCxL + PCxR);
-    else
-        PCxL = [];
-    end
-    
-    %----------------------------------------------------------------------
-    % 3. Observe Ct (do nothing)
-    
+        
     %----------------------------------------------------------------------
     % 4a. Evaluate predictive probability
     if C == 1

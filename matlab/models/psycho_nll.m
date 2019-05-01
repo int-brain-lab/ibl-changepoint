@@ -1,4 +1,4 @@
-function [nLL,output] = psycho_nLL(params,data,sigma)
+function [nLL,output] = psycho_nll(params,data,mu,sigma)
 %PSYCHO_NLL Negative log likelihood of psychometric functions.
 
 MIN_P = 1e-4;   % Minimum lapse/error probability

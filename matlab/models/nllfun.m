@@ -37,10 +37,12 @@ for iParam = 1:Nparams
         sigma = [];
     end
     
+    mu = ones(size(data.tab,1),1)*data.mu(:)';
+    
     if nargout == 1
-        nLL(iParam) = params1.model_nLLfun(params1,data,sigma);
+        nLL(iParam) = params1.model_nLLfun(params1,data,mu,sigma);
     else
-        [nLL(iParam),output(iParam)] = params1.model_nLLfun(params1,data,sigma);
+        [nLL(iParam),output(iParam)] = params1.model_nLLfun(params1,data,mu,sigma);
     end
 end
 
