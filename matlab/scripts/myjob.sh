@@ -46,11 +46,11 @@ switch runtype
 		% model_names = {'changepoint_doublenoise'};
 		% model_names = {'omniscient_fixedprior_doublenoise'};
 		model_names = {'$SECONDPARAM'};
-		mouse_name = '$PARAMS';
+		mouse_name = ['$PARAMS'];
+		% mouse_name = ['$PARAMS' '_half2'];
 		Nopts = [5,5];
 		vbmc_flag = true;
-		refit_flags = [false,true];
+		refit_flags = [false,false];
 		modelfits = batch_model_fit(model_names,mouse_name,Nopts,vbmc_flag,refit_flags);
 end
-
 EOF
