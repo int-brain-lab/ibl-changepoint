@@ -60,11 +60,13 @@ bads_flag = ~contains(params.model_name,{'psychofun'});
 
 % Separate optimization runs
 for iOpt = 1:Nopts(1)
-    
+        
     % Skip optimization run if it already exists
     if ~isempty(params.mle_fits) && numel(params.mle_fits.nll) >= iOpt
         continue;
     end
+        
+    nvars = numel(bounds.PLB);  % Number of dimensions
     
     if size(opt_init,1) >= iOpt     % Use provided starting points
         x0 = opt_init(iOpt,:);
@@ -72,13 +74,28 @@ for iOpt = 1:Nopts(1)
         if iOpt == 1
             x0 = bounds.x0;
         else
-            x0 = rand(1,numel(bounds.PLB)).*(bounds.PUB-bounds.PLB) + bounds.PLB;
+            x0 = rand(1,nvars).*(bounds.PUB-bounds.PLB) + bounds.PLB;
         end
         if ~isempty(x0_base) && iOpt <= ceil(Nopts(1)/3)
             x0(~isnan(x0_base)) = x0_base(~isnan(x0_base));
         end
     end
+    
+    % Evaluate nLL on a bunch of quasirandom points, start from best
+    Ninit = 5*nvars;    
+    P = sobolset(nvars);
+    P = scramble(P,'MatousekAffineOwen');
+    xx = bsxfun(@plus,bsxfun(@times,net(P,Ninit),bounds.PUB-bounds.PLB),bounds.PLB);    
+    x0_list = [x0; xx];
 
+    nll0 = zeros(size(x0_list,1),1);
+    for i0 = 1:size(x0_list,1)
+        nll0(i0) = nllfun(x0_list(i0,:),params,data);        
+    end
+    [~,idx0] = min(nll0);
+    x0 = x0_list(idx0,:);
+
+    % Run optimization from best initial point
     if bads_flag
         MaxFunEvals = 2e3;
         badopts = bads('defaults');
@@ -117,7 +134,6 @@ if vbmc_flag
     % vbmc_opts.Plot = 'on';
     vbmc_opts.NSgpMaxMain = 0;
     vbmc_opts.RetryMaxFunEvals = vbmc_opts.MaxFunEvals;
-    vbmc_opts.RankCriterion = true;     % Will become default soon
 
 %         w.SearchCacheFrac = 0.1; w.HPDSearchFrac = 0.9; w.HeavyTailSearchFrac = 0; w.MVNSearchFrac = 0; w.SearchAcqFcn = @vbmc_acqpropregt; w.StopWarmupThresh = 0.1; w.SearchCMAESVPInit = false;
 %         vbmc_opts.WarmupOptions = w; vbmc_opts.TolStableWarmup = 5; vbmc_opts.FastWarmup = true; vbmc_opts.NSgpMaxWarmup = 8;

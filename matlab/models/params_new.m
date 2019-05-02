@@ -51,17 +51,22 @@ else
     % Bayesian observer models
 
     % Noise parameters (~discrimination threshold at given contrast)
-    if contains(model_name,'altnoise')
-        params.precision = [log(1/10^2), log(1/10^2)];
-        params.precision_power = [1 1];
-        for iParam = 1:numel(params.precision)
-            params.names{iParam} = 'precision';
-        end
-        for iParam = 1:numel(params.precision)
-            params.names{end+1} = 'precision_power';
-        end
-        extra_features{end+1} = 'asymmetric precision';
+    if contains(model_name,'nakarushton')
+        params.nakarushton_response_min = 3;
+        params.nakarushton_response_delta = 10;
+        params.nakarushton_n = 2;
+        params.nakarushton_c50 = 0.05;
+        params.nakarushton_neff_left = 1;
+        params.nakarushton_neff_right = 1;
         
+        params.names{1} = 'nakarushton_response_min';
+        params.names{end+1} = 'nakarushton_response_delta';
+        params.names{end+1} = 'nakarushton_n';
+        params.names{end+1} = 'nakarushton_c50';
+        params.names{end+1} = 'nakarushton_neff_left';
+        params.names{end+1} = 'nakarushton_neff_right';
+        
+        params.marginalize_contrasts = true;
     else
         params.sigma_contrasts(1,:) = [0.05 0.15 0.45]; % data.contrasts_vec(data.contrasts_vec~=0);
         params.sigma = linspace(20,5,numel(params.sigma_contrasts));
@@ -71,6 +76,13 @@ else
         end
         for iParam = 1:numel(params.sigma)
             params.names{iParam} = 'sigma';
+        end
+    
+        if contains(model_name,'_marg')
+            params.marginalize_contrasts = true;
+        else
+            % By default, do not marginalize over contrasts
+            params.marginalize_contrasts = false;        
         end
     end
     
@@ -97,10 +109,7 @@ else
 
         params_noise = load_model_fit([data.fullname '_' noisefile],noise_model_name);
         
-        if contains(model_name,'altnoise')
-            params.precision = params_noise.precision;
-            params.precision_power = params_noise.precision_power;
-        elseif contains(model_name,'doublenoise')
+        if contains(model_name,'doublenoise')
             params.sigma = params_noise.sigma;
             params.sigma_poly_left = params_noise.sigma_poly_left;
             params.sigma_poly_right = params_noise.sigma_poly_right;
@@ -112,7 +121,6 @@ else
         % Remove SIGMA from the parameters
         params.names(cellfun(@(x)strcmp(x,'sigma'),params.names)) = [];
     end
-    
 
     % Lapse rate
     params.lapse_rate = 0;

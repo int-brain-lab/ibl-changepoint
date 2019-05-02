@@ -1,14 +1,10 @@
-function [nLL,output] = changepoint_bayesian_nll(params,data,mu,sigma)
+function [nLL,output] = changepoint_bayesian_nll(params,data)
 %CHANGEPOINT_BAYESIAN_NLL Bayesian online changepoint detection observer.
 % (Documentation to be written.)
 %
 % Author:   Luigi Acerbi
 % Email:    luigi.acerbi@gmail.com
 % Date:     Apr/4/2019
-
-% Potentially different SIGMA for left and right stimuli, copy if only one
-% is passed
-if size(sigma,2) == 1; sigma = repmat(sigma,[1,2]); end
 
 sessions = unique(data.tab(:,2));
 
@@ -21,7 +17,7 @@ if numel(sessions) > 1
         data1_tab = data.tab(idx_session,:);
         data1 = format_data(data1_tab,data.filename,[data.fullname '_session' num2str(sessions(iSession))]);
         if nargout > 1
-            [nLL(iSession),output1] = changepoint_bayesian_nll(params,data1,mu(idx_session,:),sigma(idx_session,:));
+            [nLL(iSession),output1] = changepoint_bayesian_nll(params,data1);
             if isempty(output)
                 output = output1;
             else
@@ -31,7 +27,7 @@ if numel(sessions) > 1
                 output.resp_model = [output.resp_model; output1.resp_model];
             end
         else
-            nLL(iSession) = changepoint_bayesian_nll(params,data1,mu(idx_session,:),sigma(idx_session,:));            
+            nLL(iSession) = changepoint_bayesian_nll(params,data1);            
         end
     end
     nLL = sum(nLL);
@@ -101,7 +97,7 @@ priorL = sum(bsxfun(@times,P,p_vec(:)'),2);
 priorL = priorL(1:end-1); % Cut prediction for trial + 1
 
 % Compute negative log likelihood and probability of responding L
-[nLL,PChatL] = sdt_nll(data.S,mu,sigma,priorL,data.resp_obs,params);
+[nLL,PChatL] = sdt_nll(params,data,priorL);
 
 if nargout > 1
     % RMSE between predictive posterior probability and true category probability
