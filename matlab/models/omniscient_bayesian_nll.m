@@ -7,6 +7,13 @@ else
     priorL = data.p_true;
 end
 
+% Pre-compute response probability as a function of signed contrast level
+% and log prior odds for speed
+pgrid = sort(unique(priorL));
+pgrid = [pgrid(1)-sqrt(eps),pgrid(:)',pgrid(end)+sqrt(eps)];
+[params.PChatL_grid,params.lp_odds_grid] = ...
+    precompute_sdt(params,data,pgrid);
+
 % Compute negative log likelihood and probability of responding L
 [nLL,PChatL] = sdt_nll(params,data,priorL);
 

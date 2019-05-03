@@ -24,4 +24,10 @@ end
 data.signed_contrasts = data.contrasts;
 data.signed_contrasts(data.C == 1) = -data.signed_contrasts(data.C == 1);
 
+signed_contrasts_vec = sort(unique(data.signed_contrasts));
+for ii = 1:numel(signed_contrasts_vec)
+    idx = data.signed_contrasts == signed_contrasts_vec(ii);
+    data.signed_contrasts_idx(idx) = ii;
+end
+
 end

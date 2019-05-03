@@ -1,9 +1,9 @@
 % Plot parameters from fitted changepoint model
 
 vp = [];
-mice_list = get_mice_list([],'half2');
-% model_name = 'changepoint_doublenoise_runlength_probs_lapse';
-model_name = 'changepoint_doublenoise_runlength_probs';
+mice_list = get_mice_list([],[]);
+% model_name = 'changepoint_nakarushton_runlength_probs_lapse';
+model_name = 'changepoint_nakarushton_runlength_probs';
 theta = [];
 
 for iMouse = 1:numel(mice_list)
