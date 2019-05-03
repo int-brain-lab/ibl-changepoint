@@ -21,6 +21,8 @@ if iscell(opt_init)
     opt_init = temp;
 end
 
+empirical_bayes = true; % Use empirical Bayes Gaussian prior
+
 % Save fits
 if nargin < 7 || isempty(save_flag); save_flag = false; end
 
@@ -134,13 +136,30 @@ if vbmc_flag
     % vbmc_opts.Plot = 'on';
     vbmc_opts.NSgpMaxMain = 0;
     vbmc_opts.RetryMaxFunEvals = vbmc_opts.MaxFunEvals;
-    % vbmc_opts.UncertaintyHandling = true;
+    vbmc_opts.UncertaintyHandling = true;   % Deal with high-frequency noise
+    vbmc_opts.SGDStepSize = 5e-4;           % Very narrow posteriors
 
 %         w.SearchCacheFrac = 0.1; w.HPDSearchFrac = 0.9; w.HeavyTailSearchFrac = 0; w.MVNSearchFrac = 0; w.SearchAcqFcn = @vbmc_acqpropregt; w.StopWarmupThresh = 0.1; w.SearchCMAESVPInit = false;
 %         vbmc_opts.WarmupOptions = w; vbmc_opts.TolStableWarmup = 5; vbmc_opts.FastWarmup = true; vbmc_opts.NSgpMaxWarmup = 8;
 
-    % Assume smoothed trapezoidal prior over finite box
-    logprior = @(x) log(msplinetrapezpdf(x,bounds.LB,bounds.PLB,bounds.PUB,bounds.UB));
+    
+    % Compute empirical Bayes (truncated) Gaussian prior over parameters
+    if empirical_bayes
+        mice_list = get_mice_list([],[]);
+        theta = [];
+        for iMouse = 1:numel(mice_list)
+            params1 = load_model_fit(mice_list{iMouse},model_name);
+            if ~isempty(params1); theta = [theta; params1.theta]; end
+        end
+        prior_mean = mean(theta);
+        prior_std = std(theta);
+        logprior = @(x) log(mtruncgausspdf(x,bounds.LB,prior_mean-prior_std,prior_mean+prior_std,bounds.UB));
+        [prior_mean; prior_std]
+    else
+        % Assume smoothed trapezoidal prior over finite box
+        logprior = @(x) log(msplinetrapezpdf(x,bounds.LB,bounds.PLB,bounds.PUB,bounds.UB));    
+        % logprior = @(x) log(mtruncgausspdf(x,bounds.LB,bounds.PLB,bounds.PUB,bounds.UB));
+    end
     
     for iOpt = 1:Nvbmc        
         % Skip variational optimization run if it already exists

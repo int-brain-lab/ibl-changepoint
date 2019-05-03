@@ -13,13 +13,3 @@ try
 catch
     params = [];
 end
-
-% Old file structure (for retro-compatibility, to be removed soon)
-if isempty(params)
-    try
-        temp = load([fits_path filename '.mat'],'params');
-        params = temp.params;
-    catch
-        params = [];
-    end
-end
