@@ -53,10 +53,24 @@ sigma_sc = [fliplr(sigma_vec(1,2:end)),sigma_vec(2,:)];
 %% 2. Get noisy measurement grid and pdf
 
 if isempty(nx); nx = 5001; end
-MAXSD = 10;
-X = bsxfun(@plus, mu_sc(:), bsxfun(@times, sigma_sc(:), MAXSD*linspace(-1,1,nx)));
-W = normpdf(linspace(-MAXSD,MAXSD,nx));
-W = W./qtrapz(W);
+
+if 1
+    MAXSD = 10;
+    X = bsxfun(@plus, mu_sc(:), bsxfun(@times, sigma_sc(:), MAXSD*linspace(-1,1,nx)));
+    W = normpdf(linspace(-MAXSD,MAXSD,nx));
+    W = W./qtrapz(W);
+else
+    MAXSD = 6;
+    Nc = numel(mu_sc);  nx = ceil(nx/Nc);
+    X = bsxfun(@plus, mu_sc(:), bsxfun(@times, sigma_sc(:), MAXSD*linspace(-1,1,nx)));
+    X = repmat(sort(X(:)'),[Nc,1]);
+    
+    W = normpdf(X,mu_sc(:),sigma_sc(:));
+    dx = 0.5*[diff(X(1,:)),0] + 0.5*[0,diff(X(1,:))];
+    W = W.*dx;    
+    W = W./sum(W,2);
+    
+end
 
 %% 3. Compute decision variable according to noise model
 

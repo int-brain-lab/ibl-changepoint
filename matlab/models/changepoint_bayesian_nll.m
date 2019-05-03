@@ -11,7 +11,7 @@ sessions = unique(data.tab(:,2));
 % Pre-compute response probability as a function of signed contrast level 
 % and log prior odds for speed
 if ~isfield(params,'PChatL_grid') || isempty(params.PChatL_grid)
-    np = 201;
+    np = 501;
     pgrid = linspace(params.prob_low-sqrt(eps),params.prob_high+sqrt(eps),np);
 
     [params.PChatL_grid,params.lp_odds_grid] = ...
