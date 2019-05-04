@@ -33,7 +33,7 @@ if numel(sessions) > 1
             else
                 output.p_estimate = [output.p_estimate; output1.p_estimate];
                 output.rmse = [output.rmse; output1.rmse];
-                output.post = output1.post;
+                output.post = [output.post; output1.post];
                 output.resp_model = [output.resp_model; output1.resp_model];
             end
         else
