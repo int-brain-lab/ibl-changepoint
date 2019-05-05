@@ -30,10 +30,11 @@ if numel(sessions) > 1
             [nLL(iSession),output1] = changepoint_bayesian_nll(params,data1);
             if isempty(output)
                 output = output1;
-            else
+            else                
                 output.p_estimate = [output.p_estimate; output1.p_estimate];
                 output.rmse = [output.rmse; output1.rmse];
                 output.post = [output.post; output1.post];
+                output.fullpost = [output.fullpost; output1.fullpost];
                 output.resp_model = [output.resp_model; output1.resp_model];
             end
         else
@@ -89,6 +90,7 @@ p_vec3(1,1,:) = p_vec;
 P = zeros(NumTrials+1,Nprobs);      % Posterior over state
 P(1,:) = ones(1,Nprobs)/Nprobs;
 last = zeros(NumTrials,size(post,1));
+if nargout > 1; output.fullpost = zeros(NumTrials,size(post,1),Nprobs); end
 
 for t = 1:NumTrials
     %t
@@ -97,7 +99,9 @@ for t = 1:NumTrials
 
     % The predictive posterior is about the next trial
     P(t+1,:) = pi_post;
-    last(t,:) = tt/sum(tt);    
+    last(t,:) = tt/sum(tt);
+    
+    if nargout > 1; output.fullpost(t,:,:) = post; end
 end
 
 %% Compute log likelihood and response probability
