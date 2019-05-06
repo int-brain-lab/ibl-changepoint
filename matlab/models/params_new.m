@@ -251,13 +251,21 @@ else
                 
         % Function handle to change-point prior
         params.runlength_tau = 60;
-
-        % Beta hyperprior on observations
-        params.beta_hyp = sqrt([0.1,0.1]);      % Little bias by default
-        
         params.names{end+1} = 'runlength_tau';
-        params.names{end+1} = 'beta_hyp';
-        params.names{end+1} = 'beta_hyp';
+
+        if contains(model_name,'hyperprobs')
+            params.lnp_hyp = zeros(1,4);            
+            for i = 1:numel(params.lnp_hyp)
+                params.names{end+1} = 'lnp_hyp';
+            end
+            extra_features{end+1} = 'hyperprobs';            
+        else
+            % Beta hyperprior on observations
+            params.beta_hyp = sqrt([0.1,0.1]);      % Little bias by default
+
+            params.names{end+1} = 'beta_hyp';
+            params.names{end+1} = 'beta_hyp';
+        end
     end
     
     % Assign extra features to model description

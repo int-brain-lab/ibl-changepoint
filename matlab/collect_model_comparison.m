@@ -6,8 +6,9 @@ if nargin < 2; model_list = []; end
 if isempty(data_list); data_list = get_mice_list(); end
 if isempty(model_list)
 %    model_list = {'omniscient_fixedprior_doublenoise','changepoint_doublenoise','changepoint_doublenoise_runlength_probs'}; 
-    model_list = {'omniscient_fixedprior_nakarushton','changepoint_nakarushton','changepoint_nakarushton_runlength_probs', ...
-        'omniscient_fixedprior_nakarushton_lapse','changepoint_nakarushton_lapse','changepoint_nakarushton_runlength_probs_lapse'};
+    model_list = {'omniscient_fixedprior_nakarushton','changepoint_nakarushton','changepoint_nakarushton_runlength_probs', 'exponential_nakarushton', ...
+        'omniscient_fixedprior_nakarushton_lapse','changepoint_nakarushton_lapse','changepoint_nakarushton_runlength_probs_lapse', ...
+        'exponential_nakarushton_lapse'};
 %        'omniscient_fixedprior_doublenoise','changepoint_doublenoise','changepoint_doublenoise_runlength_probs'}; 
 end
 

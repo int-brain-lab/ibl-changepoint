@@ -113,6 +113,8 @@ while iParam <= numel(params.names)
                 bvec = [1e-6,1-1e-6,0.01,0.99,0.5];
             case {'beta_hyp'}
                 bvec = sqrt([0,100,0.1,10,0.1]);
+            case {'lnp_hyp'}
+                bvec = log([0.001,1000,0.1,10,1]);
                 
             % Psychometric function parameters
             case 'psycho_mu'

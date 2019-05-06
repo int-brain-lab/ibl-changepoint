@@ -48,15 +48,10 @@ if numel(sessions) > 1
     return;
 end
 
+%% Observer model
+
 NumTrials = size(data.C,1);
-
-%% Assign observer model parameters
-
-beta_hyp = params.beta_hyp;
-if isscalar(beta_hyp); beta_hyp = beta_hyp*[1,1]; end
 tau = params.runlength_tau;
-
-%% Initialize inference
 
 windowSize = 100;
 Lcounts = data.C == 1;
@@ -67,12 +62,41 @@ ff = exp(-(0:windowSize)/tau);   % Exponential filter
 Lexp_avg = filter(ff,1,Lcounts);
 Rexp_avg = filter(ff,1,Rcounts);
 
-priorcountsL = beta_hyp(1);
-priorcountsR = beta_hyp(2);
+if isfield(params,'lnp_hyp')
+    MIN_P = 1e-6;
+    np = 201;
+    lnp_hyp = params.lnp_hyp;    
+    p = [log(MIN_P) lnp_hyp 0 fliplr(lnp_hyp) log(MIN_P)];
+    px = min(max(MIN_P,linspace(0,1,numel(p))),1-MIN_P);    
+    xx = linspace(MIN_P,1-MIN_P,np);
+    lnpvec = interp1(px,p,xx,'pchip');
+    
+    likeL = bsxfun(@times,Lexp_avg,log(xx));
+    likeR = bsxfun(@times,Rexp_avg,log(1-xx));
+    
+    lnpost = bsxfun(@plus,likeL + likeR,lnpvec);
+    
+    % Normalize posterior
+    nZ = max(lnpost,[],2);
+    postL = exp(bsxfun(@minus,lnpost,nZ));
+    postL = bsxfun(@rdivide,postL,sum(postL,2));    
+    
+    % Mean of the posterior
+    priorL = sum(bsxfun(@times,postL,xx),2);
+    
+else
+    beta_hyp = params.beta_hyp;
+    if isscalar(beta_hyp); beta_hyp = beta_hyp*[1,1]; end
 
-% Posterior mean
-priorL = (Lexp_avg + priorcountsL) ./ ...
-    (Lexp_avg + priorcountsL + Rexp_avg + priorcountsR);
+    priorcountsL = beta_hyp(1);
+    priorcountsR = beta_hyp(2);
+    
+    % Posterior mean
+    priorL = (Lexp_avg + priorcountsL) ./ ...
+        (Lexp_avg + priorcountsL + Rexp_avg + priorcountsR);
+    
+end
+
 
 priorL = min(max(priorL,PMIN),PMAX);
 
