@@ -20,9 +20,12 @@ switch base_model
     case 'omniscient'
         params.model_nLLfun = @omniscient_bayesian_nll;
         params.model_desc = 'Omniscient Bayesian observer';
-    case 'changepoint'        
+    case 'changepoint'
         params.model_nLLfun = @changepoint_bayesian_nll;
         params.model_desc = 'Change-point Bayesian observer';
+    case 'exponential'
+        params.model_nLLfun = @exponential_nll;
+        params.model_desc = 'Exponential-averaging observer';
     otherwise
         error('Unknown base model.');
 end        
@@ -178,7 +181,7 @@ else
     
     %% Parameters for change-point observer only
 
-    if strncmp(model_name,'changepoint',numel('changepoint'))
+    if strcmp(base_model,'changepoint')
         % Min and max run lengths
         params.runlength_min = 20;
         params.runlength_max = 100;
@@ -243,6 +246,18 @@ else
             params.names{end+1} = 'prob_high';
             extra_features{end+1} = 'probs';
         end
+        
+    elseif strcmp(base_model,'exponential')
+                
+        % Function handle to change-point prior
+        params.runlength_tau = 60;
+
+        % Beta hyperprior on observations
+        params.beta_hyp = sqrt([0.1,0.1]);      % Little bias by default
+        
+        params.names{end+1} = 'runlength_tau';
+        params.names{end+1} = 'beta_hyp';
+        params.names{end+1} = 'beta_hyp';
     end
     
     % Assign extra features to model description

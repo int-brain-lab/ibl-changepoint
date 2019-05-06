@@ -4,6 +4,7 @@ vp = [];
 mice_list = get_mice_list([],[]);
 % model_name = 'changepoint_nakarushton_runlength_probs_lapse';
 model_name = 'changepoint_nakarushton_runlength_probs';
+model_name = 'changepoint_nakarushton_lapse';
 theta = [];
 
 for iMouse = 1:numel(mice_list)

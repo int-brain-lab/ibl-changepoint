@@ -65,6 +65,8 @@ while iParam <= numel(params.names)
             case 'prob_high'
                 [~,idx_max] = max(params.p_true_vec);
                 params.p_vec(idx_max) = params.prob_high;
+            case 'beta_hyp' % Square root representation
+                params.beta_hyp = params.beta_hyp.^2;
         end
     end
     
@@ -109,6 +111,8 @@ while iParam <= numel(params.names)
                 bvec = [0.5,1-1e-6,0.51,0.99,0.8];
             case {'fixed_prior'}
                 bvec = [1e-6,1-1e-6,0.01,0.99,0.5];
+            case {'beta_hyp'}
+                bvec = sqrt([0,100,0.1,10,0.1]);
                 
             % Psychometric function parameters
             case 'psycho_mu'
