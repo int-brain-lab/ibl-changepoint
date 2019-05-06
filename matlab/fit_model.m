@@ -116,6 +116,7 @@ for iOpt = 1:Nopts(1)
     
     refitted_flag = true;
     params = compute_mle_stats(params);
+    params.mle_fits.ndata = size(data.tab,1);
     
     if save_flag; save_model_fit(data.fullname,params); end
 end

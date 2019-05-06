@@ -7,4 +7,5 @@
 *.mat
 *.png
 *.svg
+*.pdf
 .DS_Store

@@ -6,9 +6,9 @@ if nargin < 2; model_list = []; end
 if isempty(data_list); data_list = get_mice_list(); end
 if isempty(model_list)
 %    model_list = {'omniscient_fixedprior_doublenoise','changepoint_doublenoise','changepoint_doublenoise_runlength_probs'}; 
-    model_list = {'omniscient_fixedprior_nakarushton','changepoint_nakarushton','changepoint_nakarushton_runlength_probs', 'exponential_nakarushton', ...
+    model_list = {'omniscient_fixedprior_nakarushton','changepoint_nakarushton','changepoint_nakarushton_runlength_probs', 'exponential_nakarushton', 'exponential_hyperprobs_nakarushton', ...
         'omniscient_fixedprior_nakarushton_lapse','changepoint_nakarushton_lapse','changepoint_nakarushton_runlength_probs_lapse', ...
-        'exponential_nakarushton_lapse'};
+        'exponential_nakarushton_lapse', 'exponential_hyperprobs_nakarushton_lapse'};
 %        'omniscient_fixedprior_doublenoise','changepoint_doublenoise','changepoint_doublenoise_runlength_probs'}; 
 end
 
@@ -31,9 +31,13 @@ for iData = 1:Ndata
         params = load_model_fit(data_list{iData},model_list{iModel});
         if isempty(params); continue; end
                 
-        data1 = read_data_from_csv(data_list{iData});
-        Ntrials = size(data1.tab,1);
-                        
+        if isfield(params.mle_fits,'ndata')
+            Ntrials = params.mle_fits.ndata;
+        else
+            data1 = read_data_from_csv(data_list{iData});
+            Ntrials = size(data1.tab,1);
+        end
+        
         nLL = params.mle_fits.nll_best;
         if isempty(nLL)
             [nLL,idx] = min(params.mle_fits.nll);

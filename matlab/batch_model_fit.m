@@ -39,7 +39,7 @@ modelfits.params = [];
 
 for iModel = 1:numel(model_names)
     
-    fprintf('Fitting dataset: %s. Model: %s.\n',data.fullname,model_names{iModel});
+    fprintf('Fitting dataset: %s. Model: %s.\n\n',data.fullname,model_names{iModel});
     
     if isempty(model_names{iModel}); continue; end
     

@@ -1,12 +1,14 @@
-function plot_changepoints(data,params,N,titlestr,fitinfo_flag)
+function plot_changepoints(data,params,N,titlestr,plot_type,fitinfo_flag)
 %PLOT_CHANGEPOINTS Plot performance around changepoints.
 
 if nargin < 2; params = []; end
 if nargin < 3 || isempty(N); N = 20; end
 if nargin < 4; titlestr = []; end
-if nargin < 5 || isempty(fitinfo_flag); fitinfo_flag = true; end
+if nargin < 5 || isempty(plot_type); plot_type = 'all'; end
+if nargin < 6 || isempty(fitinfo_flag); fitinfo_flag = true; end
 
-fontsize = 14;
+fontsize = 18;
+axesfontsize = 14;
 
 if ischar(data); data = read_data_from_csv(data); end
 
@@ -46,12 +48,15 @@ for iC = 1:size(cps,1)
     ok_trials = data.tab(idx_list,2) == data.tab(cps(iC),2);
     offset = offset(ok_trials); idx_list = idx_list(ok_trials);
     
+    p_block = p_true(cps(iC));
+        
+    if strcmpi(plot_type(1),'l') && p_block < 0.5; continue; end
+    if strcmpi(plot_type(1),'r') && p_block > 0.5; continue; end
+    
     % Loop over (valid) surrounding trials
     for iTrial = 1:numel(idx_list)
         idx = idx_list(iTrial);
-        
-        p_block = p_true(cps(iC));
-        
+                
         tab_index = offset(iTrial) + N;
         
         if (p_block > 0.5 && data.S(idx) < 0) || (p_block < 0.5 && data.S(idx) > 0) ...
@@ -93,10 +98,6 @@ for iC = 1:size(cps,1)
                         tab_match_model(iC,tab_index,data.contrasts_idx(idx),match_column) + 1 - mean(resp_model(idx,:),2);
                 end
             end
-            
-            
-            
-            
             
         end
         
@@ -181,13 +182,37 @@ set(gca,'Ytick',0:0.5:1);
 xlim([min(xticks)-0.5,max(xticks)+0.5]);
 ylim([0 1]);
 % set(gca,'XTickLabel',xtext);
-xlabel('Trial with respect to change point','FontSize',fontsize);
-ylabel('P(response matches block after change-point)','FontSize',fontsize);
-if ~isempty(titlestr); title(titlestr,'FontSize',fontsize); end
- 
-text(1.05,0.95,'Matching stimuli','Units','Normalized','Fontsize',fontsize);
-text(1.05,0.05,'Non-matching stimuli','Units','Normalized','Fontsize',fontsize);
 
+if ~isempty(titlestr); title(titlestr,'FontSize',fontsize); end
+
+switch lower(plot_type(1))
+    case 'a'
+        xtext = 'Trial with respect to change point';
+        ytext = 'P(response matches block after change-point)';
+        toptext = 'Matching stimuli';
+        bottomtext = 'Non-matching stimuli';
+    case 'l'
+        xtext = 'Trial with respect to change point';
+        ytext = 'P(choice Left)';
+        toptext = 'Left stimuli';
+        bottomtext = 'Right stimuli';
+        text(0.1,-0.1,'Right block','Fontsize',fontsize,'Units','Normalized')
+        text(0.9,-0.1,'Left block','Fontsize',fontsize,'Units','Normalized')
+    case 'r'
+        xtext = 'Trial with respect to change point';
+        ytext = 'P(choice Right)';
+        toptext = 'Right stimuli';
+        bottomtext = 'Left stimuli';
+        
+end
+        
+        
+xlabel(xtext,'FontSize',fontsize);
+ylabel(ytext,'FontSize',fontsize);
+text(1.05,0.95,toptext,'Units','Normalized','Fontsize',fontsize);
+text(1.05,0.05,bottomtext,'Units','Normalized','Fontsize',fontsize);
+set(gca,'Fontsize',axesfontsize);
+        
 if plot_data_flag
      hl = legend(h,legtext{:});
      set(hl,'Location','eastoutside','Box','off','FontSize',fontsize);
