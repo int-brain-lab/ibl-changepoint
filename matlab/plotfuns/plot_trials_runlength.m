@@ -14,6 +14,7 @@ plot_trials(data,params,titlestr,plotchoice_flag,plotbycontrast_flag);
 xlabel('');
 set(gca,'XTickLabel',[]);
 xlim(xlims);
+set(gca,'YTick',[0 0.2 0.5 0.8 1]);
 
 subplot(4,nx,3*nx+(1:nx-1));
 plot_runlength_posterior(data,params,'Posterior over run lengths');
