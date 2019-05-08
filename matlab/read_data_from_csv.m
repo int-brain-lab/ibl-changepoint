@@ -1,8 +1,8 @@
 function data = read_data_from_csv(fullname)
 %READ_DATA_FROM_CSV Read from file and return DATA struct.
 
-mypath = fileparts(mfilename('fullpath'));
-addpath([mypath filesep '..' filesep 'data']);
+%mypath = fileparts(mfilename('fullpath')); % data folder should already be on path
+%addpath([mypath filesep '..' filesep 'data']);
 
 % Add these modifiers to file name (preceded by underscore) to load a 
 % specific subset of the data, e.g. 'CSHL_003_unbiased'

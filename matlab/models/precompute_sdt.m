@@ -76,23 +76,42 @@ end
 
 Ncontrasts = numel(data.contrasts_vec);
 
-if isfield(params,'marginalize_contrasts') && params.marginalize_contrasts
+if (isfield(params,'marginalize_contrasts') || isfield(params,'marginalize_approx')) ...    
+    && (params.marginalize_contrasts || params.marginalize_approx)
     % Marginalize over non-zero contrasts (assumes uniform prior over contrasts)
 
+    if isfield(params,'marginalize_approx')
+        approx_marginalization = params.marginalize_approx;
+    else
+        approx_marginalization = false;
+    end
+    
     % Ignore zero-contrast
     muL_vec3(1,1,:) = mu_sc(1:Ncontrasts-1);
     sigmaL_vec3(1,1,:) = sigma_vec(1:Ncontrasts-1);
     muR_vec3(1,1,:) = mu_sc(Ncontrasts+1:end);
     sigmaR_vec3(1,1,:) = sigma_sc(Ncontrasts+1:end);
 
-    % Sum over likelihoods (with numerical savviness to avoid overflows)
-    loglikeL_contrast = bsxfun(@plus,-0.5*bsxfun(@rdivide,bsxfun(@minus,X,muL_vec3),sigmaL_vec3).^2, -log(sigmaL_vec3));
-    maxL = max(loglikeL_contrast,[],3);
-    loglikeL = log(sum(exp(bsxfun(@minus,loglikeL_contrast,maxL)),3)) + maxL;
+    if approx_marginalization
+        % Approximate marginalized likelihood with single Gaussian
+        mu_approx = mean(muL_vec3);
+        sigma2_approx = mean(muL_vec3.^2 + sigmaL_vec3.^2) - mu_approx^2;
+        loglikeL = -0.5*(X-mu_approx).^2./sigma2_approx - 0.5*log(2*pi*sigma2_approx);
+        
+        mu_approx = mean(muR_vec3);
+        sigma2_approx = mean(muR_vec3.^2 + sigmaR_vec3.^2) - mu_approx^2;
+        loglikeR = -0.5*(X-mu_approx).^2./sigma2_approx - 0.5*log(2*pi*sigma2_approx);        
+    else
+        % Sum over likelihoods (with numerical savviness to avoid overflows)
+        loglikeL_contrast = bsxfun(@plus,-0.5*bsxfun(@rdivide,bsxfun(@minus,X,muL_vec3),sigmaL_vec3).^2, -log(sigmaL_vec3));
+        maxL = max(loglikeL_contrast,[],3);
+        loglikeL = log(sum(exp(bsxfun(@minus,loglikeL_contrast,maxL)),3)) + maxL;
+        
+        loglikeR_contrast = bsxfun(@plus,-0.5*bsxfun(@rdivide,bsxfun(@minus,X,muR_vec3),sigmaR_vec3).^2, -log(sigmaR_vec3));
+        maxR = max(loglikeR_contrast,[],3);
+        loglikeR = log(sum(exp(bsxfun(@minus,loglikeR_contrast,maxR)),3)) + maxL;
+    end
 
-    loglikeR_contrast = bsxfun(@plus,-0.5*bsxfun(@rdivide,bsxfun(@minus,X,muR_vec3),sigmaR_vec3).^2, -log(sigmaR_vec3));
-    maxR = max(loglikeR_contrast,[],3);
-    loglikeR = log(sum(exp(bsxfun(@minus,loglikeR_contrast,maxR)),3)) + maxL;
 else    
     muL(:,1) = [mu_sc(1:Ncontrasts),fliplr(mu_sc(1:Ncontrasts-1))];
     sigmaL(:,1) = [sigma_sc(1:Ncontrasts),fliplr(sigma_sc(1:Ncontrasts-1))];

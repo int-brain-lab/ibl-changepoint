@@ -69,7 +69,13 @@ else
         params.names{end+1} = 'nakarushton_neff_left';
         params.names{end+1} = 'nakarushton_neff_right';
         
-        params.marginalize_contrasts = true;
+        if contains(model_name,'marginalize_approx')
+            params.marginalize_contrasts = false;
+            params.marginalize_approx = true;
+        else
+            params.marginalize_contrasts = true;
+            params.marginalize_approx = false;
+        end
     else
         params.sigma_contrasts(1,:) = [0.05 0.15 0.45]; % data.contrasts_vec(data.contrasts_vec~=0);
         params.sigma = linspace(20,5,numel(params.sigma_contrasts));
@@ -81,7 +87,7 @@ else
             params.names{iParam} = 'sigma';
         end
     
-        if contains(model_name,'_marg')
+        if contains(model_name,'marginalize_contrasts')
             params.marginalize_contrasts = true;
         else
             % By default, do not marginalize over contrasts
