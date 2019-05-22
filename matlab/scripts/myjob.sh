@@ -42,15 +42,18 @@ switch runtype
 		train_set='${TRAINSET}'
 		fit_all_unbiased
 	case 'fit'
-		% model_names = {'changepoint_doublenoise_runlength_probs'};
-		% model_names = {'changepoint_doublenoise'};
-		% model_names = {'omniscient_fixedprior_doublenoise'};
+		% model_names = {'changepoint_nakarushton_runlength_probs'};
+		% model_names = {'changepoint_nakarushton'};
+		% model_names = {'omniscient_fixedprior_nakarushton'};
 		model_names = {'$SECONDPARAM'};
 		mouse_name = ['$PARAMS'];
 		% mouse_name = ['$PARAMS' '_half2'];
-		Nopts = [5,5];
-		vbmc_flag = true;
+		Nopts = [10,5];
+		vbmc_flag = false;
 		refit_flags = [false,false];
 		modelfits = batch_model_fit(model_names,mouse_name,Nopts,vbmc_flag,refit_flags);
+	case 'learn'
+		mouse_name = ['$PARAMS'];
+		run_changepoint_learner
 end
 EOF
