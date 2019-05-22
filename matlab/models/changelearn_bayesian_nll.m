@@ -42,7 +42,6 @@ end
 
 % Flat prior for the moment
 logpost_grid = cumsum(log(p_grid),1);
-
 post_grid = exp(bsxfun(@minus,logpost_grid,max(logpost_grid,[],2)));
 post_grid = bsxfun(@rdivide,post_grid,sum(post_grid,2));
 
@@ -67,7 +66,6 @@ if nargout > 1
     output.p_estimate = priorL;
     output.resp_model = PChatL;    
     output.param_grid = param_grid;
-    output.post_grid = post_grid;
     output.p_grid = p_grid;
 end
 

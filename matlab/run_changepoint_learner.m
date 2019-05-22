@@ -8,7 +8,7 @@ data = read_data_from_csv(mouse_name); % Load mouse data
 
 % Load perceptual decision-making parameters from flexible model fit
 params1 = load_model_fit(mouse_name,'changepoint_nakarushton_runlength_probs');
-theta = params1.theta;
+theta = params1.theta(1:6);
 
 params = params_new('changelearn_nakarushton',data);
 params = setup_params(theta,params);
