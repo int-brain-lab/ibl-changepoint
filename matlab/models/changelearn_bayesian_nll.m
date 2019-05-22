@@ -40,8 +40,12 @@ end
 
 %% Compute posterior over change-point parameters
 
+loglike = zeros(size(p_grid));
+loglike(data.C == 1,:) = log(p_grid(data.C == 1,:));
+loglike(data.C ~= 1,:) = log(1-p_grid(data.C ~= 1,:));
+
 % Flat prior for the moment
-logpost_grid = cumsum(log(p_grid),1);
+logpost_grid = cumsum(loglike,1);
 post_grid = exp(bsxfun(@minus,logpost_grid,max(logpost_grid,[],2)));
 post_grid = bsxfun(@rdivide,post_grid,sum(post_grid,2));
 
