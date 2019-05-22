@@ -6,16 +6,18 @@ if nargin < 4 || isempty(xlims)
 end
 
 nx = 9;
+fontsizes = [24 18];
 
 subplot(4,nx,[1:nx-1,nx+(1:nx-1),2*nx+(1:nx-1)]);
 plotchoice_flag = false;
 plotbycontrast_flag = true;
-plot_trials(data,params,titlestr,plotchoice_flag,plotbycontrast_flag);
+plot_trials(data,params,titlestr,plotchoice_flag,plotbycontrast_flag,fontsizes);
 xlabel('');
 set(gca,'XTickLabel',[]);
 xlim(xlims);
 set(gca,'YTick',[0 0.2 0.5 0.8 1]);
 
 subplot(4,nx,3*nx+(1:nx-1));
-plot_runlength_posterior(data,params,'Posterior over run lengths');
+plot_runlength_posterior(data,params,'Posterior probability over run lengths',fontsizes);
 xlim(xlims);
+colorbar;

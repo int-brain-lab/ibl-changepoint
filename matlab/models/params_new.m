@@ -12,6 +12,7 @@ extra_features = [];
 idx = find(model_name=='_',1);
 if isempty(idx); idx = numel(model_name)+1; end
 base_model = model_name(1:idx-1);
+extra_model = model_name(idx:end);
 
 switch base_model
     case 'psychofun'
@@ -23,6 +24,9 @@ switch base_model
     case 'changepoint'
         params.model_nLLfun = @changepoint_bayesian_nll;
         params.model_desc = 'Change-point Bayesian observer';
+    case 'changelearn'
+        params.model_nLLfun = @changelearn_bayesian_nll;
+        params.model_desc = 'Change-point Bayesian learner';        
     case 'exponential'
         params.model_nLLfun = @exponential_nll;
         params.model_desc = 'Exponential-averaging observer';
@@ -196,25 +200,25 @@ else
         params.runlength_tau = 60;
         params.runlength_prior = ['@(t) exp(-t/' num2str(params.runlength_tau,'%.8f') ')'];
 
-        % Probability levels in the session
+        % Probability levels in the data
         p_true_vec = unique(data.p_true);
         
         % Set transition states
         switch numel(p_true_vec)
             case 3  % Start with any block, then alternating biased
-                params.p_true_vec = [p_true_vec(1) p_true_vec(3) p_true_vec(2) 0.5];
-                params.p0 = [1 1 0 1]/3;
-%               params.p0 = [0 0 0 1];
-                params.Tmat = [0 1 0 0; 1 0 0 0; 0.5 0.5 0 0; 0 0 1 0];
+                params.p_true_vec = [p_true_vec(1) p_true_vec(3) p_true_vec(2)];
+                params.p0 = [1 1 1]/3;
+%               params.p0 = [0 0 1];
+                params.Tmat = [0 1 0; 1 0 0; 1/3 1/3 1/3];
             case 2  % Only alternating blocks
                 params.p_true_vec = [p_true_vec(1) p_true_vec(2)];
                 params.p0 = [0.5 0.5];
                 params.Tmat = [0 1; 1 0];
             case 1  % Only one p -- must be the "unbiased" case
-                params.p_true_vec = [0.2 0.8 0.5 0.5];
-                params.p0 = [1 1 0 1]/3;
-                params.Tmat = [0 1 0 0; 1 0 0 0; 0.5 0.5 0 0; 0 0 1 0];
-                % params.p0 = [0 0 0 1];
+                params.p_true_vec = [0.2 0.8 0.5];
+                params.p0 = [1 1 1]/3;
+                params.Tmat = [0 1 0; 1 0 0; 1/3 1/3 1/3];
+                % params.p0 = [0 0 1];
         end
         
         % Probability states (representing "probability of left stimulus")
@@ -224,20 +228,7 @@ else
         % Probabilities for low and high-probability blocks
         params.prob_low = min(params.p_vec);
         params.prob_high = max(params.p_vec);
-        
-%         % Probability states (representing "probability of left stimulus")
-%         defaults.p_vec = [0.2,0.5,0.8];
-%         Nprobs = numel(defaults.p_vec);
-% 
-%         % Starting belief over state
-%         defaults.p0 = ones(1,Nprobs)/Nprobs;
-% 
-%         % Default transition matrix (equal-probability change)
-%         defaults.Tmat = (ones(Nprobs,Nprobs) - eye(Nprobs)) / (Nprobs-1);
-
-        % Beta hyperprior on observations after changepoint (bias towards L/R)
-        params.beta_hyp = [0,0];      % No bias by default
-        
+                
         if contains(model_name,'_runlength')
             params.names{end+1} = 'runlength_tau';
             params.names{end+1} = 'runlength_min';
@@ -252,6 +243,10 @@ else
             params.names{end+1} = 'prob_high';
             extra_features{end+1} = 'probs';
         end
+        
+    elseif strcmp(base_model,'changelearn')
+        
+        params.changeparams = params_new(['changepoint_runlength_probs' extra_model],data);
         
     elseif strcmp(base_model,'exponential')
                 

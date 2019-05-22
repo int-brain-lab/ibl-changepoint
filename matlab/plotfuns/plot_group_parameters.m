@@ -5,25 +5,31 @@ batch_compute_parameters;
 fontsize = 18;
 axesfontsize = 14;
 
-true_values = [NaN 60 20 0.2 0.8];
+true_values = [60 20 0.2 0.8];
 
-tt = theta(:,7:11);
-tt(:,[2 3]) = exp(tt(:,[2 3]));
-for i = 1:5
-    subplot(2,3,i);
-    hist(tt(:,i),50);
+nbins = 50;
+xx{1} = linspace(1,200,nbins);
+xx{2} = linspace(1,30,nbins);
+xx{3} = linspace(0,1,nbins);
+xx{4} = linspace(0,1,nbins);
+
+tt = theta(:,8:11);
+tt(:,[1 2]) = exp(tt(:,[1 2]));
+for i = 1:4
+    subplot(2,2,i);
+    hist(tt(:,i),xx{i});
     h = findobj(gca,'Type','patch');
     h(1).FaceColor = [0 0.5 0.5];
     h(1).EdgeColor = 'w';
     box off;
     
-    xtext = params.names{i+6};
+    xtext = params.names{i+7};
     switch xtext
         case 'lapse_rate'; xtext = 'lapse rate';
-        case 'runlength_min'; xtext = 'minimum block length';
-        case 'runlength_tau'; xtext = 'block length time constant \tau';
-        case 'prob_low'; xtext = 'P(Left) in Right block'; xlim([0 0.5]);
-        case 'prob_high'; xtext = 'P(Left) in Left block'; xlim([0.5 1]);
+        case 'runlength_min'; xtext = 'minimum block length'; xlim([0 30]);
+        case 'runlength_tau'; xtext = 'block length time constant \tau'; xlim([0 200]);
+        case 'prob_low'; xtext = 'P(Left) in Right block'; xlim([0 1]);
+        case 'prob_high'; xtext = 'P(Left) in Left block'; xlim([0 1]);
         otherwise
             xtext(xtext == '_') = '-';
     end

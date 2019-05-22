@@ -1,12 +1,13 @@
-function plot_trials(data,params,titlestr,plotchoice_flag,plotbycontrast_flag)
+function plot_trials(data,params,titlestr,plotchoice_flag,plotbycontrast_flag,fontsizes)
 %PLOT_TRIALS Running plot of trial probabilities.
 
 if nargin < 3; titlestr = []; end
 if nargin < 4 || isempty(plotchoice_flag); plotchoice_flag = true; end
 if nargin < 5 || isempty(plotbycontrast_flag); plotbycontrast_flag = false; end
+if nargin < 6 || isempty(fontsizes); fontsizes = [18 14]; end
 
-axesfontsize = 14;
-fontsize = 18;
+fontsize = fontsizes(1);
+axesfontsize = fontsizes(2);
 
 [~,output] = nllfun([],params,data);
 
@@ -16,7 +17,7 @@ h(1) = plot(trials,data.p_true,'Color',[0 0 0],'LineWidth',3);
 ltext{1} = 'True probability';
 
 hold on;
-h(end+1) = plot(trials,output.p_estimate,'Color',[0.2 0.2 0.2],'LineWidth',1);
+h(end+1) = plot(trials,output.p_estimate,'Color',[83 154 206]/255,'LineWidth',3);
 ltext{end+1} = 'Estimated probability';
 
 if plotchoice_flag

@@ -4,6 +4,15 @@ function [PChatL,logprior_odds,mu_sc,sigma_sc] = precompute_sdt(params,data,pgri
 
 if nargin < 4; nx = []; end
 
+if all(isnan(data.resp_obs))
+    % Skip pre-computation of the log-likelihood
+    PChatL = NaN;
+    logprior_odds = NaN;
+    mu_sc = NaN;
+    sigma_sc = NaN;
+    return;
+end
+
 %% 1. Signal-detection theory noise model setup
 
 contrasts_vec = data.contrasts_vec;

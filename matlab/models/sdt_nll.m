@@ -1,6 +1,13 @@
 function [nLL,PChatL] = sdt_nll(params,data,priorL)
 %SDT_NLL Compute negative log likelihood with signal-detection theory model.
 
+if all(isnan(data.resp_obs))
+    % Skip computation of the log-likelihood
+    nLL = NaN;
+    PChatL = NaN(size(data.resp_obs));
+    return;
+end
+
 % Compute log prior odds per trial
 logprior_odds = log(priorL./(1-priorL));
 

@@ -1,11 +1,11 @@
-function plot_runlength_posterior(data,params,titlestr)
+function plot_runlength_posterior(data,params,titlestr,fontsizes)
 %PLOT_TRIALS Running plot of trial probabilities.
 
 if nargin < 3; titlestr = []; end
+if nargin < 4 || isempty(fontsizes); fontsizes = [18 14]; end
 
-axesfontsize = 14;
-fontsize = 18;
-
+fontsize = fontsizes(1);
+axesfontsize = fontsizes(2);
 
 [~,output] = nllfun([],params,data);
 

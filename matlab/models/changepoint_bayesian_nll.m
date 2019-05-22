@@ -1,4 +1,4 @@
-function [nLL,output] = changepoint_bayesian_nll(params,data)
+function [nLL,output] = changepoint_bayesian_nll(params,data,pflag)
 %CHANGEPOINT_BAYESIAN_NLL Bayesian online changepoint detection observer.
 % (Documentation to be written.)
 %
@@ -6,11 +6,14 @@ function [nLL,output] = changepoint_bayesian_nll(params,data)
 % Email:    luigi.acerbi@gmail.com
 % Date:     Apr/4/2019
 
+% If PFLAG is TRUE only compute P_ESTIMATE
+if nargin < 3 || isempty(pflag); pflag = false; end
+
 sessions = unique(data.tab(:,2));
 
 % Pre-compute response probability as a function of signed contrast level 
 % and log prior odds for speed
-if ~isfield(params,'PChatL_grid') || isempty(params.PChatL_grid)
+if ~pflag && (~isfield(params,'PChatL_grid') || isempty(params.PChatL_grid))
     np = 501;
     pgrid = linspace(params.prob_low-sqrt(eps),params.prob_high+sqrt(eps),np);
 
@@ -18,7 +21,7 @@ if ~isfield(params,'PChatL_grid') || isempty(params.PChatL_grid)
         precompute_sdt(params,data,pgrid);
 end
 
-% Split multiple sessions
+%% Split multiple sessions
 if numel(sessions) > 1
     nLL = zeros(1,numel(sessions));
     output = [];
@@ -27,42 +30,33 @@ if numel(sessions) > 1
         data1_tab = data.tab(idx_session,:);
         data1 = format_data(data1_tab,data.filename,[data.fullname '_session' num2str(sessions(iSession))]);
         if nargout > 1
-            [nLL(iSession),output1] = changepoint_bayesian_nll(params,data1);
+            [nLL(iSession),output1] = changepoint_bayesian_nll(params,data1,pflag);
             if isempty(output)
                 output = output1;
-            else                
+            else
                 output.p_estimate = [output.p_estimate; output1.p_estimate];
-                output.rmse = [output.rmse; output1.rmse];
-                output.post = [output.post; output1.post];
+                output.runlength_post = [output.runlength_post; output1.runlength_post];
                 output.fullpost = [output.fullpost; output1.fullpost];
                 output.resp_model = [output.resp_model; output1.resp_model];
             end
         else
-            nLL(iSession) = changepoint_bayesian_nll(params,data1);            
+            nLL(iSession) = changepoint_bayesian_nll(params,data1,pflag);
         end
     end
     nLL = sum(nLL);
-    if nargout > 1
-        output.rmse = sqrt(mean(output.rmse.^2));
-    end
     return;
 end
-
-NumTrials = size(data.C,1);
 
 %% Assign observer model parameters
 
 p_vec = params.p_vec;
 Nprobs = numel(p_vec);          % # states
-beta_hyp = params.beta_hyp;
-if isscalar(beta_hyp); beta_hyp = beta_hyp*[1,1]; end
 
 runlength_min = params.runlength_min;
 runlength_max = params.runlength_max;
 runlength_prior = str2func(params.runlength_prior);
 
-
-%% Initialize inference
+%% Initialize and run change-point algorithm
 
 % Construct hazard function from change-point prior (prior over run lengths)
 rlprior = runlength_prior(floor(runlength_min):ceil(runlength_max));
@@ -78,31 +72,17 @@ H = rlprior(:)./flipud(cumsum(flipud(rlprior(:))));
 post = zeros(ceil(runlength_max),Nprobs);
 post(1,:) = params.p0;  % Change in the first trial
 
-% Table of binomial count/probability
-Psi = zeros(size(post,1),1,Nprobs);
-Psi(1,1,:) = 1/Nprobs;
-
 % Transition matrix
 Tmat(1,:,:) = params.Tmat;
 p_vec3(1,1,:) = p_vec;
 
-%% Begin loop over trials
-P = zeros(NumTrials+1,Nprobs);      % Posterior over state
-P(1,:) = ones(1,Nprobs)/Nprobs;
-last = zeros(NumTrials,size(post,1));
-if nargout > 1; output.fullpost = zeros(NumTrials,size(post,1),Nprobs); end
+% Store full posterior at each trial?
+save_fullpost = isfield(params,'save_fullpost') && params.save_fullpost ...
+    && nargout > 1;
 
-for t = 1:NumTrials
-    %t
-    [post,Psi,pi_post] = bayesianOCPDupdate(data.C(t),post,Psi,Tmat,H,p_vec3,beta_hyp);
-    tt = nansum(post,2);
-
-    % The predictive posterior is about the next trial
-    P(t+1,:) = pi_post;
-    last(t,:) = tt/sum(tt);
-    
-    if nargout > 1; output.fullpost(t,:,:) = post; end
-end
+% Iterative Bayesian update over trials
+[post,P,runlength_post,fullpost] = ...
+    bayesianOCPDloop(data.C,post,Tmat,H,p_vec3,save_fullpost,pflag);    
 
 %% Compute log likelihood and response probability
 
@@ -111,22 +91,45 @@ priorL = sum(bsxfun(@times,P,p_vec(:)'),2);
 priorL = priorL(1:end-1); % Cut prediction for trial + 1
 
 % Compute negative log likelihood and probability of responding L
-[nLL,PChatL] = sdt_nll(params,data,priorL);
+if ~pflag
+    [nLL,PChatL] = sdt_nll(params,data,priorL);
+else
+    nLL = NaN;  PChatL = [];
+end
 
 if nargout > 1
-    % RMSE between predictive posterior probability and true category probability
-    meanP = sum(bsxfun(@times,p_vec,P(1:NumTrials,:)),2);
-    output.p_estimate = meanP;
-    output.rmse = sqrt(mean((meanP - data.p_true).^2));
-    output.post = post;
-    output.resp_model = PChatL(1:NumTrials);
+    output.p_estimate = priorL;
+    output.runlength_post = runlength_post;
+    output.resp_model = PChatL;
+    output.fullpost = fullpost;
 end
 
 end
 
 %--------------------------------------------------------------------------
-function [post,Psi,pi_post] = bayesianOCPDupdate(C,post,Psi,Tmat,H,p_vec,beta_hyp)
+function [post,P,runlength_post,fullpost] = bayesianOCPDloop(C,post,Tmat,H,p_vec,save_fullpost,pflag)
 %BAYESIANCPDUPDATE Bayesian online changepoint detection update
+
+NumTrials = size(C,1);
+Nprobs = numel(p_vec);
+
+% Table of binomial count/probability
+Psi = ones(size(post,1),1,Nprobs);
+Psi(1,1,:) = 1/Nprobs;
+
+P = zeros(NumTrials+1,Nprobs);      % Posterior over state
+P(1,:) = ones(1,Nprobs)/Nprobs;
+
+runlength_post = [];    fullpost = [];
+if ~pflag; runlength_post = zeros(NumTrials,size(post,1)); end
+
+% Store full posterior at each iteration
+if save_fullpost; fullpost = zeros(NumTrials,size(post,1),Nprobs); end
+
+for t = 1:NumTrials        
+    %t
+    % [post,Psi,pi_post] = bayesianOCPDupdate(data.C(t),post,Psi,Tmat,H,p_vec3);
+
 
     %if mod(t,100) == 0
     %    t
@@ -142,7 +145,7 @@ function [post,Psi,pi_post] = bayesianOCPDupdate(C,post,Psi,Tmat,H,p_vec,beta_hy
         
     %----------------------------------------------------------------------
     % 4a. Evaluate predictive probability
-    if C == 1
+    if C(t) == 1
         predCat = predCatL ./ (predCatL + predCatR);
     else
         predCat = predCatR ./ (predCatL + predCatR);         
@@ -152,7 +155,7 @@ function [post,Psi,pi_post] = bayesianOCPDupdate(C,post,Psi,Tmat,H,p_vec,beta_hy
     post = bsxfun(@times, post, predCat);
         
     % 4c. Evaluate posterior probability over state (only for relevant range)
-    if C == 1
+    if C(t) == 1
         pi_postC = bsxfun(@times, pi_post(idxrange,:,:), p_vec);
     else
         pi_postC = bsxfun(@times, pi_post(idxrange,:,:), 1-p_vec);
@@ -162,7 +165,7 @@ function [post,Psi,pi_post] = bayesianOCPDupdate(C,post,Psi,Tmat,H,p_vec,beta_hy
     %----------------------------------------------------------------------    
     % 5a. Calculate unnormalized changepoint probabilities
     slice = post(idxrange,:);   % Slice out trials where change is possible
-    currenttrial = nansum( ...
+    currenttrial = sum( ...
         bsxfun(@times, sum(bsxfun(@times, slice, pi_postC),2), H), ...
         1);
     
@@ -183,18 +186,29 @@ function [post,Psi,pi_post] = bayesianOCPDupdate(C,post,Psi,Tmat,H,p_vec,beta_hy
     %----------------------------------------------------------------------
     % 6a. Update sufficient statistics
     Psi = circshift(Psi,1,1);
-    if C == 1
+    if C(t) == 1
         Psi = bsxfun(@times, Psi, p_vec);
     else
         Psi = bsxfun(@times, Psi, 1 - p_vec);
     end
     
-    % Hyperprior
-    Psi(1,1,:) = exp(beta_hyp(1).*log(p_vec) + beta_hyp(2).*log(1-p_vec));
+    Psi(1,1,:) = 1;
     Psi = bsxfun(@rdivide, Psi, sum(Psi,3));
     
     % 6b. Store predictive posterior over pi_t
-    pi_post = nansum(sum(bsxfun(@times,bsxfun(@times, Psi, Tmat), post),2),1);
+    pi_post = sum(sum(bsxfun(@times,bsxfun(@times, Psi, Tmat), post),2),1);
     pi_post = pi_post / sum(pi_post);
 
+    % 7. More bookkeeping
+    
+    tt = sum(post,2);
+
+    % The predictive posterior is about the next trial
+    P(t+1,:) = pi_post;
+    if ~pflag; runlength_post(t,:) = tt/sum(tt); end
+
+    if save_fullpost; fullpost(t,:,:) = post; end
+end
+    
+    
 end
