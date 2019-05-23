@@ -12,9 +12,9 @@ ylims = [1 100; 1 100; 0 1; 0 1];
 param_names = {'Run-length exponential scale \tau', 'Minimum block length','P(Left) in Right blocks','P(Left) in Left blocks'};
 true_vals = [60,20,0.2,0.8];
 
-t = unique(round(exp(linspace(log(1),log(tmax),1e3))));
+tt = unique(round(exp(linspace(log(1),log(1e5),1509))));
 
-mu_all = nan(numel(mice_list),numel(t),4);
+mu_all = nan(numel(mice_list),numel(tt),4);
 
 for i = 1:numel(mice_list)
     mouse_name = mice_list{i};    
@@ -23,23 +23,31 @@ for i = 1:numel(mice_list)
     
     if isempty(params); continue; end
     
-    p_grid = params.output.p_grid;
-    NumTrials = size(p_grid,1);
 
-    % Compute posterior over change-point parameters
-    loglike = zeros(size(p_grid));
-    loglike(data.C(1:NumTrials) == 1,:) = log(p_grid(data.C(1:NumTrials) == 1,:));
-    loglike(data.C(1:NumTrials) ~= 1,:) = log(1-p_grid(data.C(1:NumTrials) ~= 1,:));
+    if isfield(params.output,'loglike_grid_trials')
+        logpost_grid = params.output.loglike_grid_trials;        
+        post_grid = exp(bsxfun(@minus,logpost_grid,max(logpost_grid,[],2)));
+        post_grid = bsxfun(@rdivide,post_grid,sum(post_grid,2));        
+    else
+        p_grid = params.output.p_grid;
+        NumTrials = size(p_grid,1);
+        
+        % Compute posterior over change-point parameters
+        loglike = zeros(size(p_grid));
+        loglike(data.C(1:NumTrials) == 1,:) = log(p_grid(data.C(1:NumTrials) == 1,:));
+        loglike(data.C(1:NumTrials) ~= 1,:) = log(1-p_grid(data.C(1:NumTrials) ~= 1,:));
 
-    % Flat prior for the moment
-    logpost_grid = cumsum(loglike,1);    
-    post_grid = exp(bsxfun(@minus,logpost_grid,max(logpost_grid,[],2)));
-    post_grid = bsxfun(@rdivide,post_grid,sum(post_grid,2));
+        % Flat prior for the moment
+        logpost_grid = cumsum(loglike,1);    
+        
+        post_grid = exp(bsxfun(@minus,logpost_grid,max(logpost_grid,[],2)));
+        post_grid = bsxfun(@rdivide,post_grid,sum(post_grid,2));
+
+        % Only keep subset of trials    
+        post_grid = post_grid(tt(tt<=NumTrials),:);        
+    end
     
-    % Only keep subset of trials    
-    post_grid = post_grid(t(t<=NumTrials),:);
-    
-    tt = t(t<=NumTrials);
+    tt = tt(tt<=NumTrials);
 
     p3(1,:,:) = params.output.param_grid;
     mu = squeeze(sum(post_grid.*p3,2));
@@ -89,7 +97,7 @@ end
 
 for iParam = 1:4
     subplot(2,2,iParam);
-    h(3) = plot(t,nanmean(mu_all(:,:,iParam),1),'-k','LineWidth',3);
+    h(3) = plot(tt,nanmean(mu_all(:,:,iParam),1),'-k','LineWidth',3);
     if iParam == 4
         hl = legend(h,{'True value','Single datasets','Grand average'});
         set(hl,'Box','off','Fontsize',axesfontsize,'Location','best');

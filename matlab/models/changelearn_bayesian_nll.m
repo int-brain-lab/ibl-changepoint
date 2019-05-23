@@ -56,8 +56,8 @@ loglike(data.C == 1,:) = log(p_grid(data.C == 1,:));
 loglike(data.C ~= 1,:) = log(1-p_grid(data.C ~= 1,:));
 
 % Flat prior for the moment
-logpost_grid = cumsum(loglike,1);
-post_grid = exp(bsxfun(@minus,logpost_grid,max(logpost_grid,[],2)));
+loglike_grid = cumsum(loglike,1);
+post_grid = exp(bsxfun(@minus,loglike_grid,max(loglike_grid,[],2)));
 post_grid = bsxfun(@rdivide,post_grid,sum(post_grid,2));
 
 % Compute predictive posterior over Left
@@ -78,10 +78,15 @@ pgrid = linspace(prob_low(1)-sqrt(eps),prob_high(end)+sqrt(eps),np);
 [nLL,PChatL] = sdt_nll(params,data,priorL);
 
 if nargout > 1
+    % Time steps
+    tt = unique(round(exp(linspace(log(1),log(1e5),1509))));
+    tt = tt(tt <= size(priorL,1));
+    
     output.p_estimate = priorL;
     output.resp_model = PChatL;    
     output.param_grid = param_grid;
-    output.p_grid = p_grid;
+    output.trials = tt;
+    output.loglike_grid_trials = loglike_grid(tt,:);
 end
 
 end
