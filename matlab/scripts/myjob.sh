@@ -54,6 +54,7 @@ switch runtype
 		modelfits = batch_model_fit(model_names,mouse_name,Nopts,vbmc_flag,refit_flags);
 	case 'learn'
 		mouse_name = ['$PARAMS'];
+		data_mod='${SECONDPARAM}';
 		run_changepoint_learner
 end
 EOF
