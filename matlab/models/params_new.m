@@ -206,19 +206,23 @@ else
         % Set transition states
         switch numel(p_true_vec)
             case 3  % Start with any block, then alternating biased
-                params.p_true_vec = [p_true_vec(1) p_true_vec(3) p_true_vec(2)];
-                params.p0 = [1 1 1]/3;
-%               params.p0 = [0 0 1];
-                params.Tmat = [0 1 0; 1 0 0; 1/3 1/3 1/3];
+                %params.p_true_vec = [p_true_vec(1) p_true_vec(3) p_true_vec(2)];
+                %params.p0 = [1 1 1]/3;
+                %params.Tmat = [0 1 0; 1 0 0; 1/3 1/3 1/3];
+                params.p_true_vec = [p_true_vec(1) p_true_vec(3) p_true_vec(2) 0.5];
+                params.p0 = [1 1 0 1]/3;
+                params.Tmat = [0 1 0 0; 1 0 0 0; 1/2 1/2 0 0; 0 0 1 0];
             case 2  % Only alternating blocks
                 params.p_true_vec = [p_true_vec(1) p_true_vec(2)];
                 params.p0 = [0.5 0.5];
                 params.Tmat = [0 1; 1 0];
             case 1  % Only one p -- must be the "unbiased" case
-                params.p_true_vec = [0.2 0.8 0.5];
-                params.p0 = [1 1 1]/3;
-                params.Tmat = [0 1 0; 1 0 0; 1/3 1/3 1/3];
-                % params.p0 = [0 0 1];
+%                 params.p_true_vec = [0.2 0.8 0.5];
+%                 params.p0 = [1 1 1]/3;
+%                 params.Tmat = [0 1 0; 1 0 0; 1/3 1/3 1/3];
+                params.p_true_vec = [0.2 0.8 0.5 0.5];
+                params.p0 = [1 1 0 1]/3;
+                params.Tmat = [0 1 0 0; 1 0 0 0; 1/2 1/2 0 0; 0 0 1 0];                
         end
         
         % Probability states (representing "probability of left stimulus")

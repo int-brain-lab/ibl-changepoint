@@ -4,6 +4,8 @@ if ~exist('mouse_name','var')
     error('Need to specify a mouse name.')
 end
 
+tmax = 1e4; % Maximum number of trials considered
+
 data = read_data_from_csv(mouse_name); % Load mouse data
 
 % Load perceptual decision-making parameters from flexible model fit
@@ -15,7 +17,7 @@ params = setup_params(theta,params);
 params.Ngrid = 10;
 
 % Compute model
-[nLL,params.output] = changelearn_bayesian_nll(params,data);
+[nLL,params.output] = changelearn_bayesian_nll(params,data,tmax);
 
 % Save negative log likelihood
 params.mle_fits.x0 = theta;

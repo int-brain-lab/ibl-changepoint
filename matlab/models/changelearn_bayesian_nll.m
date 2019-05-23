@@ -1,10 +1,21 @@
-function [nLL,output] = changelearn_bayesian_nll(params,data)
+function [nLL,output] = changelearn_bayesian_nll(params,data,tmax)
 %CHANGELEARN_NLL Bayesian online changepoint detection learner observer.
 % (Documentation to be written.)
 %
 % Author:   Luigi Acerbi
 % Email:    luigi.acerbi@gmail.com
 % Date:     May/22/2019
+
+if nargin < 3 || isempty(tmax); tmax = Inf; end
+
+
+%% Trim dataset if requested
+
+if isfinite(tmax)
+    fprintf('Trimming data down to %d trials.\n',tmax); 
+    data.tab = data.tab(1:min(end,tmax),:);
+    data = format_data(data.tab,data.filename,data.fullname);    
+end
 
 %% Initialize change-point learner
 
