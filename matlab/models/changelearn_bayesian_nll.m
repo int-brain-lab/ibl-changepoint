@@ -25,7 +25,7 @@ if isfield(params,'Ngrid') && ~isempty(params.Ngrid)
 else
     Ngrid = 10;
 end
-runlength_tau = log(round(exp(linspace(log(1),log(100),Ngrid))));
+runlength_tau = linspace(log(1),log(100),2*Ngrid-1);
 runlength_min = log(round(exp(linspace(log(1),log(90),Ngrid))));
 prob_low = linspace(0.1,0.9,Ngrid-1);
 prob_high = linspace(0.1,0.9,Ngrid-1);

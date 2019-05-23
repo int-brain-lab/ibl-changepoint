@@ -24,12 +24,12 @@ for i = 1:numel(mice_list)
     if isempty(params); continue; end
     
     p_grid = params.output.p_grid;
-    NumTrials = size(data.tab,1);
+    NumTrials = size(p_grid,1);
 
     % Compute posterior over change-point parameters
     loglike = zeros(size(p_grid));
-    loglike(data.C == 1,:) = log(p_grid(data.C == 1,:));
-    loglike(data.C ~= 1,:) = log(1-p_grid(data.C ~= 1,:));
+    loglike(data.C(1:NumTrials) == 1,:) = log(p_grid(data.C(1:NumTrials) == 1,:));
+    loglike(data.C(1:NumTrials) ~= 1,:) = log(1-p_grid(data.C(1:NumTrials) ~= 1,:));
 
     % Flat prior for the moment
     logpost_grid = cumsum(loglike,1);    
