@@ -4,9 +4,16 @@ if ~exist('mouse_name','var')
     error('Need to specify a mouse name.')
 end
 
+if ~exist('data_mod','var')
+    data_mod = [];
+end
+
+if ~isempty(data_mod) && data_mod(1) ~= '_'; data_mod = ['_' data_mod]; end
+
 tmax = 1e4; % Maximum number of trials considered
 
-data = read_data_from_csv(mouse_name); % Load mouse data
+data_name = [mouse_name data_mod];
+data = read_data_from_csv(data_name); % Load mouse data
 
 % Load perceptual decision-making parameters from flexible model fit
 params1 = load_model_fit(mouse_name,'changepoint_nakarushton_runlength_probs');
@@ -28,4 +35,4 @@ params.mle_fits.nll_best = theta;
 params.mle_fits.ndata = size(data.tab,1);
 
 % Save fit
-save_model_fit(mouse_name,params);
+save_model_fit(data_name,params);

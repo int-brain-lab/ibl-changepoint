@@ -6,7 +6,7 @@ function data = read_data_from_csv(fullname)
 
 % Add these modifiers to file name (preceded by underscore) to load a 
 % specific subset of the data, e.g. 'CSHL_003_unbiased'
-modifiers = {'unbiased','half1','half2'};
+modifiers = {'unbiased','half1','half2','biasedonly'};
 
 data_modifiers = {''};
 
@@ -29,6 +29,12 @@ if any(cellfun(@(x)strcmp(x,'unbiased'),data_modifiers))
     % Remove biased trials
     fprintf('Removing biased trials...\n');
     data_tab(data_tab(:,3) ~= 0.5,:) = [];
+end
+
+if any(cellfun(@(x)strcmp(x,'biasedonly'),data_modifiers))
+    % Remove biased trials
+    fprintf('Removing unbiased trials...\n');
+    data_tab(data_tab(:,3) == 0.5,:) = [];
 end
 
 if contains(fullname,'endtrain')

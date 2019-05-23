@@ -1,6 +1,6 @@
 function rldist = runlengthdist(tau,p)
 
-N = 1e6;
+N = 1e5;
 
 % Min/max block length
 rlmin = 20;
@@ -15,7 +15,13 @@ for iter = 1:50
     
     while any(idx)
         Nactive = sum(idx);
-        x(idx) = x(idx) + min(rlmax,max(rlmin,round(exprnd(tau,[Nactive,1]))));
+        idx2 = true(Nactive,1);
+        y = zeros(Nactive,1);
+        while any(idx2)
+            y(idx2) = rlmin + round(exprnd(tau,[sum(idx2),1]));
+            idx2 = y > rlmax;
+        end
+        x(idx) = x(idx) + y;
         idx(idx) = rand(Nactive,1) < p;    
     end
     
