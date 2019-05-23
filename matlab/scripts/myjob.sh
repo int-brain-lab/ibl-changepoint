@@ -55,6 +55,7 @@ switch runtype
 	case 'learn'
 		mouse_name = ['$PARAMS'];
 		data_mod='${SECONDPARAM}';
+		if data_mod(1) == '['; data_mod = []; end % Passed empty string
 		run_changepoint_learner
 end
 EOF
