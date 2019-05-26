@@ -118,7 +118,7 @@ Psi = ones(size(post,1),1,Nprobs);
 Psi(1,1,:) = 1/Nprobs;
 
 P = zeros(NumTrials+1,Nprobs);      % Posterior over state
-P(1,:) = ones(1,Nprobs)/Nprobs;
+P(1,:) = post(1,:);
 
 runlength_post = [];    fullpost = [];
 if ~pflag; runlength_post = zeros(NumTrials,size(post,1)); end

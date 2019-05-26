@@ -5,6 +5,8 @@ axesfontsize = 14;
 
 mice_list = get_mice_list();
 model_name = 'changelearn_nakarushton';
+data_mod = 'biasedonly';
+data_mod = [];
 
 tmax = 1e4;
 
@@ -12,14 +14,22 @@ ylims = [1 100; 1 100; 0 1; 0 1];
 param_names = {'Run-length exponential scale \tau', 'Minimum block length','P(Left) in Right blocks','P(Left) in Left blocks'};
 true_vals = [60,20,0.2,0.8];
 
-tt = unique(round(exp(linspace(log(1),log(1e5),1509))));
+tt0 = unique(round(exp(linspace(log(1),log(1e5),1509))));
 
-mu_all = nan(numel(mice_list),numel(tt),4);
+mu_all = nan(numel(mice_list),numel(tt0),4);
+
+first_flag = true;
 
 for i = 1:numel(mice_list)
-    mouse_name = mice_list{i};    
-    data = read_data_from_csv(mouse_name);
-    params = load_model_fit(mouse_name,model_name);
+    mouse_name = mice_list{i};
+    
+    if ~isempty(data_mod)
+        data_name = [mouse_name '_' data_mod];
+    else
+        data_name = mouse_name;
+    end
+    data = read_data_from_csv(data_name);
+    params = load_model_fit(data_name,model_name);
     
     if isempty(params); continue; end
     
@@ -27,7 +37,8 @@ for i = 1:numel(mice_list)
     if isfield(params.output,'loglike_grid_trials')
         logpost_grid = params.output.loglike_grid_trials;        
         post_grid = exp(bsxfun(@minus,logpost_grid,max(logpost_grid,[],2)));
-        post_grid = bsxfun(@rdivide,post_grid,sum(post_grid,2));        
+        post_grid = bsxfun(@rdivide,post_grid,sum(post_grid,2));
+        NumTrials = size(params.output.p_estimate,1);
     else
         p_grid = params.output.p_grid;
         NumTrials = size(p_grid,1);
@@ -47,8 +58,9 @@ for i = 1:numel(mice_list)
         post_grid = post_grid(tt(tt<=NumTrials),:);        
     end
     
-    tt = tt(tt<=NumTrials);
+    tt = tt0(tt0<=NumTrials);
 
+    p3 = [];
     p3(1,:,:) = params.output.param_grid;
     mu = squeeze(sum(post_grid.*p3,2));
         
@@ -62,7 +74,7 @@ for i = 1:numel(mice_list)
         
         % s2 = max(0,squeeze(sum(post_grid.*p3.^2,2)) - mu.^2);
 
-        if i == 1
+        if first_flag
             h(1) = plot([1,tmax],true_vals(iParam)*[1 1],'-b','LineWidth',3);
             hold on;
         end
@@ -91,13 +103,14 @@ for i = 1:numel(mice_list)
         end
         
     end
-    
+        
+    first_flag = false;
     drawnow
 end
 
 for iParam = 1:4
     subplot(2,2,iParam);
-    h(3) = plot(tt,nanmean(mu_all(:,:,iParam),1),'-k','LineWidth',3);
+    h(3) = plot(tt0,nanmean(mu_all(:,:,iParam),1),'-k','LineWidth',3);
     if iParam == 4
         hl = legend(h,{'True value','Single datasets','Grand average'});
         set(hl,'Box','off','Fontsize',axesfontsize,'Location','best');
