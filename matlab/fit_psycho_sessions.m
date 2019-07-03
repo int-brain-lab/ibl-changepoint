@@ -11,7 +11,7 @@ Nopts_psy = 5; % # optimization restarts for fitting psychometric curves
 compute_posteriors_flag = true;
 %compute_posteriors_flag = false;
 
-empirical_list = mice_list; % Datasets for empirical Bayes
+empirical_list = get_mice_list('criteria_jul2019'); % Datasets for empirical Bayes
 
 % Psychometric curve at zero contrast for a given block
 psycho0 = @(psy,block) psychofun(0,[psy.psycho_mu(block),psy.psycho_sigma(block),psy.psycho_gammalo(block),psy.psycho_gammahi(block)]);
