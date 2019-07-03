@@ -29,3 +29,9 @@ if ~isempty(suffix)
        mice_list{ii} = [mice_list{ii} '_' suffix];
    end
 end
+
+if nargout == 0
+    for i = 1:numel(mice_list)
+        fprintf('%s\n',mice_list{i});
+    end
+end
