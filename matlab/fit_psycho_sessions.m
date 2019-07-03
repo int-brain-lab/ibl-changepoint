@@ -8,11 +8,10 @@ Nsamples = 20; % Approximate posterior samples for model predictions
 Nopts_psy = 5; % # optimization restarts for fitting psychometric curves
 
 % Compute posterior distributions over parameters?
-%compute_posteriors_flag = true;
-compute_posteriors_flag = false;
+compute_posteriors_flag = true;
+%compute_posteriors_flag = false;
 
-% empirical_list = mice_list; % Datasets for empirical Bayes
-empirical_list = 0; % Datasets for empirical Bayes
+empirical_list = mice_list; % Datasets for empirical Bayes
 
 % Psychometric curve at zero contrast for a given block
 psycho0 = @(psy,block) psychofun(0,[psy.psycho_mu(block),psy.psycho_sigma(block),psy.psycho_gammalo(block),psy.psycho_gammahi(block)]);

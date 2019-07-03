@@ -165,6 +165,10 @@ if vbmc_flag
         prior_std = std(theta);
         logprior = @(x) log(mtruncgausspdf(x,bounds.LB,prior_mean-prior_std,prior_mean+prior_std,bounds.UB));
         [prior_mean; prior_std]
+        
+        width = bounds.UB - bounds.LB;
+        bounds.PLB = max(prior_mean - 2*prior_std,bounds.LB+0.025*width);
+        bounds.PUB = min(prior_mean + 2*prior_std,bounds.UB-0.025*width);        
     else
         % Assume smoothed trapezoidal prior over finite box
         logprior = @(x) log(msplinetrapezpdf(x,bounds.LB,bounds.PLB,bounds.PUB,bounds.UB));    
