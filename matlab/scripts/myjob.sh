@@ -37,6 +37,9 @@ cd('${WORKDIR}');
 runtype='${RUNTYPE}'
 
 switch runtype
+	case 'psycho'
+		mice_list={'$PARAMS'}
+		fit_psycho_sessions
 	case 'train'
 		mice_list={'$PARAMS'}
 		train_set='${TRAINSET}'
