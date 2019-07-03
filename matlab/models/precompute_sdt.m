@@ -61,12 +61,18 @@ sigma_sc = [fliplr(sigma_vec(1,2:end)),sigma_vec(2,:)];
 
 %% 2. Get noisy measurement grid and pdf
 
-if isempty(nx); nx = 5001; end
+if isempty(nx); nx = 50001; end
 
 if 1
+    randomize = true;
     MAXSD = 10;
-    X = bsxfun(@plus, mu_sc(:), bsxfun(@times, sigma_sc(:), MAXSD*linspace(-1,1,nx)));
-    W = normpdf(linspace(-MAXSD,MAXSD,nx));
+    xx = MAXSD*linspace(-1,1,nx);
+    if randomize
+        shift = 2*(rand()-0.5)/(nx-1)*MAXSD;
+        xx = xx - shift;
+    end
+    X = bsxfun(@plus, mu_sc(:), bsxfun(@times, sigma_sc(:), xx));
+    W = normpdf(xx);
     W = W./qtrapz(W);
 else
     MAXSD = 6;

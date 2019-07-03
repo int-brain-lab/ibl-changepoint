@@ -1,4 +1,4 @@
-function [params,data,refitted_flag] = fit_model(model_name,data,Nopts,vbmc_flag,refit_flags,opt_init,save_flag)
+function [params,data,refitted_flag] = fit_model(model_name,data,Nopts,vbmc_flag,refit_flags,opt_init,save_flag,empirical_list)
 %FIT_MODEL Fit model MODEL_NAME to dataset DATA.
 
 % # restarts for fitting procedures (MLE and variational inference)
@@ -21,10 +21,14 @@ if iscell(opt_init)
     opt_init = temp;
 end
 
-empirical_bayes = true; % Use empirical Bayes Gaussian prior
-
 % Save fits
 if nargin < 7 || isempty(save_flag); save_flag = false; end
+
+% List of datasets for empirical Bayes prior
+if nargin < 8
+    empirical_list = [];
+end
+empirical_bayes = iscell(empirical_list) || (~isempty(empirical_list) && ~(empirical_list == false));
 
 refitted_flag = false;  % Check if model has been refitted
 
@@ -137,19 +141,24 @@ if vbmc_flag
     % vbmc_opts.Plot = 'on';
     vbmc_opts.NSgpMaxMain = 0;
     vbmc_opts.RetryMaxFunEvals = vbmc_opts.MaxFunEvals;
-    vbmc_opts.UncertaintyHandling = true;   % Deal with high-frequency noise
+    % vbmc_opts.NoiseSize = 0.1;
+    % vbmc_opts.gpNoiseFun = [1 0 1];
     vbmc_opts.SGDStepSize = 5e-4;           % Very narrow posteriors
-
+    vbmc_opts.Bandwidth = 0;             % Deal with high-frequency noise
+    vbmc_opts.UncertaintyHandling = true;
+    
 %         w.SearchCacheFrac = 0.1; w.HPDSearchFrac = 0.9; w.HeavyTailSearchFrac = 0; w.MVNSearchFrac = 0; w.SearchAcqFcn = @vbmc_acqpropregt; w.StopWarmupThresh = 0.1; w.SearchCMAESVPInit = false;
 %         vbmc_opts.WarmupOptions = w; vbmc_opts.TolStableWarmup = 5; vbmc_opts.FastWarmup = true; vbmc_opts.NSgpMaxWarmup = 8;
 
     
     % Compute empirical Bayes (truncated) Gaussian prior over parameters
-    if empirical_bayes
-        mice_list = get_mice_list([],[]);
+    if empirical_bayes        
+        if ~iscell(empirical_list)
+            empirical_list = get_mice_list([],[]);
+        end
         theta = [];
-        for iMouse = 1:numel(mice_list)
-            params1 = load_model_fit(mice_list{iMouse},model_name);
+        for iMouse = 1:numel(empirical_list)
+            params1 = load_model_fit(empirical_list{iMouse},model_name);
             if ~isempty(params1); theta = [theta; params1.theta]; end
         end
         prior_mean = mean(theta);
