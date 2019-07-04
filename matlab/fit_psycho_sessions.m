@@ -6,11 +6,10 @@ end
 
 Nsamples = 20;          % Approximate posterior samples for model predictions
 Nopts_psy = 5;          % # restarts for fitting psychometric curves
-refit_flag = false;     % Do not refit already existing fits
+refit_flag = true;      % Do not refit already existing fits
 
 % Compute posterior distributions over parameters?
-compute_posteriors_flag = true;
-%compute_posteriors_flag = false;
+compute_posteriors_flag = false;
 
 empirical_list = get_mice_list('strict_jul2019'); % Datasets for empirical Bayes
 
