@@ -4,12 +4,12 @@ if ~exist('mice_list','var') || isempty(mice_list)
     mice_list = get_mice_list('strict_jul2019');
 end
 
-Nsamples = 20;          % Approximate posterior samples for model predictions
-Nopts_psy = 5;          % # restarts for fitting psychometric curves
-refit_flag = true;      % Do not refit already existing fits
+Nsamples = 20;              % Approximate posterior samples for model predictions
+Nopts_psy = 5;              % # restarts for fitting psychometric curves
+refit_flag = [false,true];  % Refit already existing fits?
 
 % Compute posterior distributions over parameters?
-compute_posteriors_flag = false;
+compute_posteriors_flag = true;
 
 empirical_list = get_mice_list('strict_jul2019'); % Datasets for empirical Bayes
 
