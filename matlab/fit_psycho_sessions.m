@@ -41,6 +41,7 @@ for iMouse = 1:numel(mice_list)
     sessions = sessions(isfinite(sessions));
 
     for iSession = 1:numel(sessions)
+        fprintf('Fitting session %d / %d...\n',sessions(iSession),numel(sessions));
         psyfit_sessions{iSession} = batch_model_fit('psychofun', ...
             [data_name '_sess' num2str(sessions(iSession))],Nopts_psy,compute_posteriors_flag,refit_flag,empirical_list);
     end
@@ -55,18 +56,11 @@ for iMouse = 1:numel(mice_list)
     % Then, fit separately each session
     data = read_data_from_csv(data_name);
     sessions = unique(data.tab(:,2));
-    
-    % Take only session that have all block types
+        
     for iSession = 1:numel(sessions)
-        idx = data.tab(:,2) == sessions(iSession);
-        p = unique(data.tab(idx,3));
-        if numel(p) ~= 3;  sessions(iSession) = NaN; end
-    end    
-    sessions = sessions(isfinite(sessions));
-    
-    for iSession = 1:numel(sessions)
+        fprintf('Fitting training session %d / %d...\n',sessions(iSession),numel(sessions));
         psyfit_sessions_endtrain{iSession} = batch_model_fit('psychofun', ...
-            [data_name '_sess' num2str(sessions(iSession))],Nopts_psy,compute_posteriors_flag,refit_flag,empirical_list);
+            [data_name '_sess' num2str(sessions(iSession))],Nopts_psy,compute_posteriors_flag,refit_flag,empirical_endtrain);
     end
 
 
