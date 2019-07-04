@@ -51,7 +51,7 @@ for i_prob = 1:numel(p_true_vec)
         col = [0.5 0.5 0];        
     end
     
-    if ~plot_data_flag; col = 1 - 0.15*(1-col); end
+    %if ~plot_data_flag; col = 1 - 0.15*(1-col); end
     
     if strcmp(params.model_name,'psychofun')
         % Plot continuous psychometric function
