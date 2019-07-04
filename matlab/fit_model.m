@@ -151,7 +151,7 @@ if vbmc_flag
 %         vbmc_opts.WarmupOptions = w; vbmc_opts.TolStableWarmup = 5; vbmc_opts.FastWarmup = true; vbmc_opts.NSgpMaxWarmup = 8;
 
     
-    % Compute empirical Bayes (truncated) Gaussian prior over parameters
+    % Compute empirical Bayes (truncated) Student's t prior over parameters
     if empirical_bayes        
         if ~iscell(empirical_list)
             empirical_list = get_mice_list([],[]);
@@ -163,7 +163,8 @@ if vbmc_flag
         end
         prior_mean = mean(theta);
         prior_std = std(theta);
-        logprior = @(x) log(mtruncgausspdf(x,bounds.LB,prior_mean-prior_std,prior_mean+prior_std,bounds.UB));
+        df = 3;     % Use Student's t with nu = 3, milder evidence
+        logprior = @(x) log(mtrunctpdf(x,bounds.LB,prior_mean-prior_std,prior_mean+prior_std,bounds.UB,df));
         [prior_mean; prior_std]
         
         width = bounds.UB - bounds.LB;

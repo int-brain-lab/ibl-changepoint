@@ -55,18 +55,19 @@ for i_prob = 1:numel(p_true_vec)
     
     if strcmp(params.model_name,'psychofun')
         % Plot continuous psychometric function
-        Nc = 200;
-        params1.psycho_mu = params.psycho_mu(i_prob);
-        params1.psycho_sigma = params.psycho_sigma(i_prob);
-        params1.psycho_gammalo = params.psycho_gammalo(i_prob);
-        params1.psycho_gammahi = params.psycho_gammahi(i_prob);        
-        cc_psy = linspace(-1,1,Nc);
-        data1.signed_contrasts = cc_psy';
-        data1.p_true = p_true_vec(i_prob)*ones(Nc,1);
-        data1.resp_obs = -1*ones(Nc,1);        
-        [~,output1] = psycho_nll(params1,data1);
-        mean_psy = 1 - output1.resp_model;
-        plot(cc_psy,mean_psy,'LineStyle','-','Color',col,'LineWidth',2);        
+        
+        Nsamples = 100;
+        theta = get_posterior_samples(params,Nsamples);
+        if isempty(theta); theta = params.theta; end
+        
+        [mean_psy,std_psy,cc_psy] = psychofun(theta,params,i_prob,p_true_vec);
+        
+        if any(std_psy > 0)
+            fill([cc_psy,fliplr(cc_psy)],[mean_psy+std_psy,fliplr(mean_psy-std_psy)],col,'FaceAlpha',0.2,'EdgeColor','none'); hold on;
+        end
+        
+        plot(cc_psy,mean_psy,'LineStyle','-','Color',col,'LineWidth',2);
+        
     else    
         plot(cc_vec,mean_model,'LineStyle','-','Color',col,'LineWidth',2);
     end
@@ -113,3 +114,32 @@ if fitinfo_flag
 end
 
 end
+
+%--------------------------------------------------------------------------
+function [mean_psy,std_psy,cc_psy] = psychofun(theta,params,i_prob,p_true_vec)
+
+Nc = 200;
+cc_psy = linspace(-1,1,Nc);
+data1.signed_contrasts = cc_psy';
+data1.p_true = p_true_vec(i_prob)*ones(Nc,1);
+data1.resp_obs = -1*ones(Nc,1);        
+
+for i = 1:size(theta,1)
+
+    params = setup_params(theta(i,:),params);
+
+    % Compute continuous psychometric function
+    params1.psycho_mu = params.psycho_mu(i_prob);
+    params1.psycho_sigma = params.psycho_sigma(i_prob);
+    params1.psycho_gammalo = params.psycho_gammalo(i_prob);
+    params1.psycho_gammahi = params.psycho_gammahi(i_prob);        
+    [~,output1] = psycho_nll(params1,data1);
+    psy(i,:) = 1 - output1.resp_model;
+    % plot(cc_psy,mean_psy,'LineStyle','-','Color',col,'LineWidth',2);        
+end
+
+mean_psy = mean(psy,1);
+std_psy = std(psy,[],1);
+
+end
+
