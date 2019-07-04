@@ -4,6 +4,7 @@ mice_list = {'CSHL_010', 'CSK-les-008', 'DY_006', 'IBL-T4', 'IBL_13', 'IBL_17', 
     % get_mice_list('strict_jul2019');
 
 plot_list = []; plot_sessions = []; sessinfo = []; plot_train_sessions = [];
+theta = []; theta_train = [];
     
 sessions_info = [[-1.,  0., 25., 31.]; ...
        [ 0., -1.,  1., -1.]; ...
@@ -47,61 +48,46 @@ for iMouse = 1:numel(mice_list)
     plot_train_sessions{end+1} = train_sessions;
     sessinfo{end+1} = sessions_info(iMouse,:);
 end
-    
-Nmax = 6;
-Nfigs = ceil(numel(plot_list)/Nmax);
-    
+        
 for iMouse = 1:numel(plot_list)
-    iFigure = floor((iMouse-1)/Nmax)+1;
-    iRow = iMouse - (iFigure-1)*Nmax;    
-    figure(iFigure);
-
-    mouse_name = plot_list{iMouse}
+    mouse_name = plot_list{iMouse};
     n = numel(plot_sessions{iMouse});
-    idx = [round(n/3),round(n*2/3),n];
 
-    nrows = Nmax;
-    ncols = 6;
-
-    sessinfo{iMouse}
-
-    for iSession = 1:numel(idx)
-        subplot(nrows,ncols,(iRow-1)*ncols + 3 + iSession);
-        nSession = plot_sessions{iMouse}(idx(iSession))
-        training_stage = find(nSession >= [sessinfo{iMouse},Inf],1,'last');
+    for iSession = 1:n
+        nSession = plot_sessions{iMouse}(iSession);
+        % training_stage = find(nSession >= [sessinfo{iMouse},Inf],1,'last');
         data_name = [mouse_name '_sess' num2str(nSession)];
         data = read_data_from_csv(data_name);
-        data.resp_obs(:) = NaN;
-        params = load_model_fit(data_name,'psychofun');
+        params = load_model_fit(data_name,'psychofun');        
         if isempty(params); continue; end
-        plot_fit(data,params,[],false);
-        legend off;
-        xlabel(''); ylabel('');
-        % if iRow < nrows || iSession > 1; xlabel(''); end
-        % if iSession > 1 || iRow < nrows; ylabel(''); end
-        set(gca,'Ytick',[0 0.5 1]);
-        ylim([0 1]);
-        text(0.1,0.8,training_stages{training_stage},'Units','normalized','Fontsize',14);
+        for iParam = 1:4
+            theta{iMouse,iParam}(iSession) = params.theta(4+iParam);
+        end
     end
 
     for iSession = 1:3
-        subplot(nrows,ncols,(iRow-1)*ncols + iSession);
         nSession = plot_train_sessions{iMouse}(iSession);
         data_name = [mouse_name '_endtrain_sess' num2str(nSession)];
         data = read_data_from_csv(data_name);
-        data.resp_obs(:) = NaN;
         params = load_model_fit(data_name,'psychofun');
-        if iSession == 1
-            text_name = mouse_name; text_name(text_name == '_') = '-';
-            text(-1,0.5,text_name,'Units','normalized','Fontsize',14);
-        end
         if isempty(params); continue; end
-        hold on;
-        plot_fit(data,params,[],false);
-        legend off;
-        if iRow < nrows || iSession > 1; xlabel(''); end
-        if iSession > 1 || iRow < nrows; ylabel(''); end
-        set(gca,'Ytick',[0 0.5 1]);
-        ylim([0 1]);
+        for iParam = 1:4
+            theta_train{iMouse,iParam}(iSession) = params.theta(iParam);
+        end
     end    
 end
+
+for iParam = 1:4
+    th{iParam} = []; thtrain{iParam} = [];
+    for iMouse = 1:size(theta,1)
+        th{iParam} = [th{iParam}; theta{iMouse,iParam}(:)];
+        thtrain{iParam} = [thtrain{iParam}; theta_train{iMouse,iParam}(:)];
+    end
+    subplot(1,4,iParam);
+    histogram(th{iParam}); hold on;
+    histogram(thtrain{iParam}); hold on;
+    %[~,d,xx] = kde(th{iParam}); plot(xx,d); hold on;
+    %[~,d,xx] = kde(thtrain{iParam}); plot(xx,d);
+end
+    
+
