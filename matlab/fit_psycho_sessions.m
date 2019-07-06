@@ -6,7 +6,7 @@ end
 
 Nsamples = 20;              % Approximate posterior samples for model predictions
 Nopts_psy = 5;              % # restarts for fitting psychometric curves
-refit_flag = [false,true];  % Refit already existing fits?
+refit_flag = [false,false];  % Refit already existing fits?
 
 % Compute posterior distributions over parameters?
 compute_posteriors_flag = true;

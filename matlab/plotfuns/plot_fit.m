@@ -56,14 +56,15 @@ for i_prob = 1:numel(p_true_vec)
     if strcmp(params.model_name,'psychofun')
         % Plot continuous psychometric function
         
-        Nsamples = 100;
+        Nsamples = 200;
         theta = get_posterior_samples(params,Nsamples);
         if isempty(theta); theta = params.theta; end
         
-        [mean_psy,std_psy,cc_psy] = psychofun(theta,params,i_prob,p_true_vec);
+        [mean_psy,ci_psy,cc_psy] = psychofun(theta,params,i_prob,p_true_vec);
         
-        if any(std_psy > 0)
-            fill([cc_psy,fliplr(cc_psy)],[mean_psy+std_psy,fliplr(mean_psy-std_psy)],col,'FaceAlpha',0.2,'EdgeColor','none'); hold on;
+        if ~isempty(ci_psy)
+            % fill([cc_psy,fliplr(cc_psy)],[mean_psy+std_psy,fliplr(mean_psy-std_psy)],col,'FaceAlpha',0.2,'EdgeColor','none'); hold on;
+            fill([cc_psy,fliplr(cc_psy)],[ci_psy(1,:),fliplr(ci_psy(2,:))],col,'FaceAlpha',0.2,'EdgeColor','none'); hold on;
         end
         
         plot(cc_psy,mean_psy,'LineStyle','-','Color',col,'LineWidth',2);
@@ -116,7 +117,7 @@ end
 end
 
 %--------------------------------------------------------------------------
-function [mean_psy,std_psy,cc_psy] = psychofun(theta,params,i_prob,p_true_vec)
+function [mean_psy,ci_psy,cc_psy] = psychofun(theta,params,i_prob,p_true_vec)
 
 Nc = 200;
 cc_psy = linspace(-1,1,Nc);
@@ -138,8 +139,15 @@ for i = 1:size(theta,1)
     % plot(cc_psy,mean_psy,'LineStyle','-','Color',col,'LineWidth',2);        
 end
 
-mean_psy = mean(psy,1);
-std_psy = std(psy,[],1);
+mean_psy = median(psy,1);
+if size(psy,1) > 1
+%    ci_psy(1,:) = mean_psy - std(psy,[],1);
+%    ci_psy(2,:) = mean_psy + std(psy,[],1);
+    ci_psy(1,:) = quantile(psy,normcdf(-1),1);
+    ci_psy(2,:) = quantile(psy,normcdf(1),1);
+else
+    ci_psy = [];
+end
 
 end
 
