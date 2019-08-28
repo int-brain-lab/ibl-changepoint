@@ -52,7 +52,7 @@ switch runtype
 		mouse_name = ['$PARAMS'];
 		% mouse_name = ['$PARAMS' '_half2'];
 		Nopts = [10,5];
-        hmm_flag = false;
+        	hmm_flag = false;
 		vbmc_flag = false;
 		refit_flags = [false,false,false];
 		modelfits = batch_model_fit(model_names,mouse_name,Nopts,hmm_flag,vbmc_flag,refit_flags);
