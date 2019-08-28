@@ -39,7 +39,11 @@ end
 if strcmp(base_model,'psychofun')
     % Psychometric function model
     
-    Nprobs = numel(unique(data.p_true));
+    if contains(model_name,'single')
+        Nprobs = 1;
+    else
+        Nprobs = numel(unique(data.p_true));
+    end
     
     % Psychometric function parameters
     params.psycho_mu = 0*ones(1,Nprobs);
@@ -80,6 +84,21 @@ else
             params.marginalize_contrasts = true;
             params.marginalize_approx = false;
         end
+        
+        extra_features{end+1} = 'Naka-Rushton';
+        
+    elseif contains(model_name,'contrastnoise')
+        params.contrast_sigma = [1 1];
+        params.contrast_epsilon = [0.05 0.05];
+        
+        for iParam = 1:numel(params.contrast_sigma)
+            params.names{iParam} = 'contrast_sigma';
+        end
+        for iParam = 1:numel(params.contrast_epsilon)
+            params.names{end+1} = 'contrast_epsilon';
+        end
+        
+        params.marginalize_contrasts = true;
     else
         params.sigma_contrasts(1,:) = [0.05 0.15 0.45]; % data.contrasts_vec(data.contrasts_vec~=0);
         params.sigma = linspace(20,5,numel(params.sigma_contrasts));
@@ -206,22 +225,18 @@ else
         % Set transition states
         switch numel(p_true_vec)
             case 3  % Start with any block, then alternating biased
-                %params.p_true_vec = [p_true_vec(1) p_true_vec(3) p_true_vec(2)];
-                %params.p0 = [1 1 1]/3;
-                %params.Tmat = [0 1 0; 1 0 0; 1/3 1/3 1/3];
                 params.p_true_vec = [p_true_vec(1) p_true_vec(3) p_true_vec(2) 0.5];
-                params.p0 = [1 1 0 1]/3;
+                % params.p0 = [1 1 0 1]/3;
+                params.p0 = 'ideal';
                 params.Tmat = [0 1 0 0; 1 0 0 0; 1/2 1/2 0 0; 0 0 1 0];
             case 2  % Only alternating blocks
                 params.p_true_vec = [p_true_vec(1) p_true_vec(2)];
                 params.p0 = [0.5 0.5];
                 params.Tmat = [0 1; 1 0];
             case 1  % Only one p -- must be the "unbiased" case
-%                 params.p_true_vec = [0.2 0.8 0.5];
-%                 params.p0 = [1 1 1]/3;
-%                 params.Tmat = [0 1 0; 1 0 0; 1/3 1/3 1/3];
                 params.p_true_vec = [0.2 0.8 0.5 0.5];
-                params.p0 = [1 1 0 1]/3;
+%                params.p0 = [1 1 0 1]/3;
+                params.p0 = 'ideal';
                 params.Tmat = [0 1 0 0; 1 0 0 0; 1/2 1/2 0 0; 0 0 1 0];                
         end
         

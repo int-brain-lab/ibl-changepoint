@@ -12,7 +12,11 @@ end
 logprior_odds = log(priorL./(1-priorL));
 
 % Interpolate response probability from precomputed table
-scidx = data.signed_contrasts_idx;
+if isfield(params,'contrast_sigma')
+    scidx = data.contrasts_idx + (data.S > 0)*numel(data.contrasts_vec);
+else
+    scidx = data.signed_contrasts_idx;
+end
 PChatL = zeros(size(data.resp_obs));
 
 method = 'pchip';
@@ -41,7 +45,7 @@ log_PChat = log(PChatL).*(data.resp_obs == -1) + log(1-PChatL).*(data.resp_obs =
 % Correct for NaNs or Infs
 log_PChat(~isfinite(log_PChat)) = log(MIN_P);
 
-% Sum negative log likelihood
-nLL = -sum(log_PChat);
+% Negative log likelihood
+nLL = -log_PChat;
 
 end

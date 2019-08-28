@@ -69,6 +69,9 @@ for i_prob = 1:numel(p_true_vec)
         
         plot(cc_psy,mean_psy,'LineStyle','-','Color',col,'LineWidth',2);
         
+        plot([0 0],[0 1],'k:','LineWidth',0.5);
+        plot([-1 1],[0.5 0.5],'k:','LineWidth',0.5);
+        
     else    
         plot(cc_vec,mean_model,'LineStyle','-','Color',col,'LineWidth',2);
     end

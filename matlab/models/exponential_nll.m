@@ -23,14 +23,14 @@ end
 
 % Split multiple sessions
 if numel(sessions) > 1
-    nLL = zeros(1,numel(sessions));
+    nLL = [];
     output = [];
     for iSession = 1:numel(sessions)
         idx_session = data.tab(:,2) == sessions(iSession);
         data1_tab = data.tab(idx_session,:);
         data1 = format_data(data1_tab,data.filename,[data.fullname '_session' num2str(sessions(iSession))]);
         if nargout > 1
-            [nLL(iSession),output1] = exponential_nll(params,data1);
+            [nLL_temp,output1] = exponential_nll(params,data1);
             if isempty(output)
                 output = output1;
             else
@@ -38,10 +38,10 @@ if numel(sessions) > 1
                 output.resp_model = [output.resp_model; output1.resp_model];
             end
         else
-            nLL(iSession) = exponential_nll(params,data1);            
+            nLL_temp = exponential_nll(params,data1);            
         end
+        nLL = [nLL; nLL_temp];
     end
-    nLL = sum(nLL);
     if nargout > 1
         output.rmse = sqrt(mean(output.rmse.^2));
     end

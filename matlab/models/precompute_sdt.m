@@ -35,6 +35,17 @@ if isfield(params,'nakarushton_response_min')
     sigma_vec(1,:) = sqrt(r_vec/neff_left + response_min/neff_right);
     sigma_vec(2,:) = sqrt(response_min/neff_left + r_vec/neff_right);
 
+elseif isfield(params,'contrast_sigma')
+    
+    Nc = numel(contrasts_vec);
+    
+    mu_vec(1,:) = -contrasts_vec;
+    mu_vec(2,:) = contrasts_vec;
+    
+    sigma_vec(1,:) = params.contrast_sigma(1)*ones(1,Nc);
+    sigma_vec(2,:) = params.contrast_sigma(2)*ones(1,Nc);
+    
+    nf_vec = normcdf(1,mu_vec,sigma_vec) - normcdf(-1,mu_vec,sigma_vec);
 else
     mu_vec = repmat(data.mu(:),[1,numel(contrasts_vec)]);
 
@@ -61,37 +72,64 @@ sigma_sc = [fliplr(sigma_vec(1,2:end)),sigma_vec(2,:)];
 
 %% 2. Get noisy measurement grid and pdf
 
-if isempty(nx); nx = 50001; end
+if isempty(nx); nx = 2001; end
 
-if 1
-    randomize = true;
-    MAXSD = 10;
-    xx = MAXSD*linspace(-1,1,nx);
-    if randomize
-        shift = 2*(rand()-0.5)/(nx-1)*MAXSD;
-        xx = xx - shift;
-    end
-    X = bsxfun(@plus, mu_sc(:), bsxfun(@times, sigma_sc(:), xx));
-    W = normpdf(xx);
-    W = W./qtrapz(W);
+if isfield(params,'contrast_sigma')
+    
+    X = linspace(-1,1,nx);
+    L = X(end)-X(1);
+    dx = X(2)-X(1);
+    
+    contrast_eps = [params.contrast_epsilon(1)*ones(1,Nc),params.contrast_epsilon(2)*ones(1,Nc)];
+    
+    W = bsxfun(@rdivide, bsxfun_normpdf(X,[mu_vec(1,:),mu_vec(2,:)]',[sigma_vec(1,:),sigma_vec(2,:)]'), [nf_vec(1,:),nf_vec(2,:)]');
+    W = bsxfun(@plus, bsxfun(@times, W, 1-contrast_eps'), contrast_eps'/L)*dx;
+    
+    
 else
-    MAXSD = 6;
-    Nc = numel(mu_sc);  nx = ceil(nx/Nc);
-    X = bsxfun(@plus, mu_sc(:), bsxfun(@times, sigma_sc(:), MAXSD*linspace(-1,1,nx)));
-    X = repmat(sort(X(:)'),[Nc,1]);
-    
-    W = normpdf(X,mu_sc(:),sigma_sc(:));
-    dx = 0.5*[diff(X(1,:)),0] + 0.5*[0,diff(X(1,:))];
-    W = W.*dx;    
-    W = W./sum(W,2);
-    
+
+    if 1
+        randomize = false;
+        MAXSD = 10;
+        xx = MAXSD*linspace(-1,1,nx);
+        if randomize
+            shift = 2*(rand()-0.5)/(nx-1)*MAXSD;
+            xx = xx - shift;
+        end
+        X = bsxfun(@plus, mu_sc(:), bsxfun(@times, sigma_sc(:), xx));
+        W = normpdf(xx);
+        W = W./qtrapz(W);
+    else
+        MAXSD = 6;
+        Nc = numel(mu_sc);  nx = ceil(nx/Nc);
+        X = bsxfun(@plus, mu_sc(:), bsxfun(@times, sigma_sc(:), MAXSD*linspace(-1,1,nx)));
+        X = repmat(sort(X(:)'),[Nc,1]);
+
+        W = normpdf(X,mu_sc(:),sigma_sc(:));
+        dx = 0.5*[diff(X(1,:)),0] + 0.5*[0,diff(X(1,:))];
+        W = W.*dx;    
+        W = W./sum(W,2);
+
+    end
 end
 
 %% 3. Compute decision variable according to noise model
 
 Ncontrasts = numel(data.contrasts_vec);
 
-if (isfield(params,'marginalize_contrasts') || isfield(params,'marginalize_approx')) ...    
+if isfield(params,'contrast_sigma')
+    
+    muL_vec3(1,1,:) = mu_vec(1,:);
+    sigmaL_vec3(1,1,:) = sigma_vec(1,:);
+    nfL_vec3(1,1,:) = nf_vec(1,:);
+    muR_vec3(1,1,:) = mu_vec(2,:);
+    sigmaR_vec3(1,1,:) = sigma_vec(2,:);
+    nfR_vec3(1,1,:) = nf_vec(2,:);
+        
+    loglikeL = log(mean(bsxfun(@rdivide, bsxfun_normpdf(X,muL_vec3,sigmaL_vec3),nfL_vec3),3)*(1 - contrast_eps(1)) + contrast_eps(1)/L);
+    loglikeR = log(mean(bsxfun(@rdivide, bsxfun_normpdf(X,muR_vec3,sigmaR_vec3),nfR_vec3),3)*(1 - contrast_eps(end)) + contrast_eps(end)/L);
+    
+elseif (isfield(params,'marginalize_contrasts') || isfield(params,'marginalize_approx')) ...    
     && (params.marginalize_contrasts || params.marginalize_approx)
     % Marginalize over non-zero contrasts (assumes uniform prior over contrasts)
 
@@ -138,27 +176,25 @@ else
 end    
 
 % Compute log prior odds for a grid of provided P(Left) values
-logprior_odds(1,1,:) = log(pgrid./(1-pgrid));
+logprior_odds(1,:) = log(pgrid./(1-pgrid));
 
-% Decision variable (3-D table) for contrast level, measurement, and log prior odds
-dhat = bsxfun(@plus, loglikeL - loglikeR, logprior_odds);
+[Nc,Nx] = size(loglikeL);
+Np = numel(logprior_odds);
 
-%% 4. Compute negative log likelihood of responses
+loglikediff_t = (loglikeL - loglikeR)';
 
-softmax_eta = params.softmax_eta;
-softmax_bias = params.softmax_bias;
-
-% Compute probability given decision variable DHAT
-PCx_soft = 1./(1+exp(-softmax_eta*(dhat + softmax_bias)));
-PCx_soft(dhat == 0) = 0.5;
-
-% Marginalize over noisy measurements
-PChatL(:,:) = qtrapz(bsxfun(@times,PCx_soft,W),2);
+% Compute probability of responding Left
+if isfield(params,'contrast_sigma')
+    PChatL(:,:) = compute_pchatL(Nc,Nx,Np,loglikediff_t,logprior_odds,...
+        params.softmax_eta,params.softmax_bias,W);    
+else
+    PChatL(:,:) = compute_pchatL_mex(Nc,Nx,Np,loglikediff_t,logprior_odds,...
+        params.softmax_eta,params.softmax_bias,W);
+end
 
 % PCHATL is a 2-D matrix representing P(resp = Left) for contrast level 
 % (rows) times log prior odds (columns)
 
-logprior_odds = logprior_odds(:)';
 
 end
 

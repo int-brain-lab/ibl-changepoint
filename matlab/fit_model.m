@@ -1,18 +1,23 @@
-function [params,data,refitted_flag] = fit_model(model_name,data,Nopts,vbmc_flag,refit_flags,opt_init,save_flag,empirical_list)
+function [params,data,refitted_flag] = fit_model(model_name,data,Nopts,hmmfit_flag,vbmc_flag,refit_flags,opt_init,save_flag,empirical_list)
 %FIT_MODEL Fit model MODEL_NAME to dataset DATA.
 
 % # restarts for fitting procedures (MLE and variational inference)
 if nargin < 3 || isempty(Nopts); Nopts = [10,5]; end
 if numel(Nopts) > 1; Nvbmc = Nopts(2); else; Nvbmc = ceil(Nopts(1)/2); end
 
-% Get approximate posteriors with Variational Bayesian Monte Carlo
-if nargin < 4 || isempty(vbmc_flag); vbmc_flag = false; end
+% Compute state transitions with Hidden Markov model fitting
+if nargin < 4 || isempty(hmmfit_flag); hmmfit_flag = false; end
 
-% Force refits even if fit already exists
-if nargin < 5 || isempty(refit_flags); refit_flags = false; end
+% Get approximate posteriors with Variational Bayesian Monte Carlo
+if nargin < 5 || isempty(vbmc_flag); vbmc_flag = false; end
+
+% Force refits even if fit already exists (default is FALSE)
+if nargin < 6 || isempty(refit_flags); refit_flags = false; end
+if isscalar(refit_flags); refit_flags = refit_flags*ones(1,3); end
+% Flags are: 1 for MLE, 2 for HMM, 3 for VBMC
 
 % Starting point(s) for the first fit
-if nargin < 6; opt_init = []; end
+if nargin < 7; opt_init = []; end
 if isstruct(opt_init); opt_init = {opt_init}; end
 if iscell(opt_init)
     for iOpt = 1:numel(opt_init)
@@ -22,10 +27,10 @@ if iscell(opt_init)
 end
 
 % Save fits
-if nargin < 7 || isempty(save_flag); save_flag = false; end
+if nargin < 8 || isempty(save_flag); save_flag = false; end
 
 % List of datasets for empirical Bayes prior
-if nargin < 8
+if nargin < 9
     empirical_list = [];
 end
 empirical_bayes = iscell(empirical_list) || (~isempty(empirical_list) && ~(empirical_list == false));
@@ -96,22 +101,23 @@ for iOpt = 1:Nopts(1)
 
     nll0 = zeros(size(x0_list,1),1);
     for i0 = 1:size(x0_list,1)
-        nll0(i0) = nllfun(x0_list(i0,:),params,data);        
+        nll0(i0) = sum(nllfun(x0_list(i0,:),params,data));
     end
     [~,idx0] = min(nll0);
     x0 = x0_list(idx0,:);
 
     % Run optimization from best initial point
+    fun = @(x_) sum(nllfun(x_,params,data));
     if bads_flag
         MaxFunEvals = 2e3;
         badopts = bads('defaults');
         badopts.MaxFunEvals = MaxFunEvals;        
-        [x,fval] = bads(@(x_)nllfun(x_,params,data),...
-            x0,bounds.LB,bounds.UB,bounds.PLB,bounds.PUB,[],badopts);
+        [x,fval] = bads(fun,x0,...
+            bounds.LB,bounds.UB,bounds.PLB,bounds.PUB,[],badopts);
     else
         fminopts.Display = 'iter';
-        [x,fval] = fmincon(@(x_)nllfun(x_,params,data),...
-            x0,[],[],[],[],bounds.LB,bounds.UB,[],fminopts);            
+        [x,fval] = fmincon(fun,x0,...
+            [],[],[],[],bounds.LB,bounds.UB,[],fminopts);            
     end
     
     params.mle_fits.x0(iOpt,:) = x0;
@@ -128,9 +134,54 @@ end
 params.mle_fits.x
 params.mle_fits.nll
 
+%% Hidden Markov model fit
+if hmmfit_flag
+    
+    if ~isfield(params,'hmm_fits') || isempty(params.hmm_fits) || refit_flags(2)
+        params.hmm_fits = [];
+    end    
+    
+    K_vec = 1:5;  % Run HMM fit with these components
+            
+    x0 = params.theta;
+    hmmopts = hmmfit('defaults');
+    hmmopts.MaxIter = 10;
+    hmmopts.TolFun = 0.01;
+    
+    for k = 1:numel(K_vec)
+        K = K_vec(k);
+        
+        if isempty(params.hmm_fits) || numel(params.hmm_fits.hmm) < K ...
+                || isempty(params.hmm_fits.hmm{K})
+            
+            if K == 1
+                [hmm,ll,exitflag,output] = compute_hmm1(params.mle_fits);
+                hmm.ell(1,:) = exp(-nllfun(hmm.mu,params,data));
+            else
+                [hmm,ll,exitflag,output] = hmmfit(@(x_) -nllfun(x_,params,data),[],K,x0, ...
+                    bounds.LB,bounds.UB,bounds.PLB,bounds.PUB,hmmopts);
+            end
+
+            params.hmm_fits.hmm{K} = hmm;
+            params.hmm_fits.nll(K) = -ll;
+            params.hmm_fits.exitflag(K) = exitflag;
+            params.hmm_fits.output{K} = output;
+
+            params = compute_hmm_stats(params);
+            
+            if save_flag; save_model_fit(data.fullname,params); end            
+        end   
+        
+        x0 = params.hmm_fits.hmm{K}.mu;    % Use current solution as next starting point
+        
+    end
+    
+end
+
+
 if vbmc_flag
     
-    if ~isfield(params,'vbmc_fits') || isempty(params.vbmc_fits) || refit_flags(min(2,end))
+    if ~isfield(params,'vbmc_fits') || isempty(params.vbmc_fits) || refit_flags(3)
         params.vbmc_fits = [];
     end
         
@@ -146,6 +197,7 @@ if vbmc_flag
     vbmc_opts.SGDStepSize = 5e-4;           % Very narrow posteriors
     vbmc_opts.Bandwidth = 0;             % Deal with high-frequency noise
     vbmc_opts.UncertaintyHandling = true;
+    vbmc_opts.gpOutwarpFun = @outwarp_negpowc1;
     
 %         w.SearchCacheFrac = 0.1; w.HPDSearchFrac = 0.9; w.HeavyTailSearchFrac = 0; w.MVNSearchFrac = 0; w.SearchAcqFcn = @vbmc_acqpropregt; w.StopWarmupThresh = 0.1; w.SearchCMAESVPInit = false;
 %         vbmc_opts.WarmupOptions = w; vbmc_opts.TolStableWarmup = 5; vbmc_opts.FastWarmup = true; vbmc_opts.NSgpMaxWarmup = 8;
@@ -178,18 +230,18 @@ if vbmc_flag
     
     for iOpt = 1:Nvbmc        
         % Skip variational optimization run if it already exists
-        if ~isempty(params.vbmc_fits) && numel(params.vbmc_fits.vps) >= iOpt ...
-                && ~isempty(params.vbmc_fits.vps{iOpt})
+        if ~isempty(params.vbmc_fits) && numel(params.vbmc_fits.vp) >= iOpt ...
+                && ~isempty(params.vbmc_fits.vp{iOpt})
             continue;
         end
         
         [vp,~,~,~,output] = ...
-            vbmc(@(x_) -nllfun(x_,params,data)+logprior(x_), ...
+            vbmc(@(x_) -sum(nllfun(x_,params,data))+logprior(x_), ...
             x0,bounds.LB,bounds.UB,bounds.PLB,bounds.PUB,vbmc_opts);
 
         % Store results
-        params.vbmc_fits.vps{iOpt} = vp;
-        params.vbmc_fits.outputs{iOpt} = output;
+        params.vbmc_fits.vp{iOpt} = vp;
+        params.vbmc_fits.output{iOpt} = output;
         
         refitted_flag = true;
         params = compute_vbmc_stats(params);
@@ -215,9 +267,42 @@ params.mle_fits.nll_best = nll_best;
 end
 
 %--------------------------------------------------------------------------
+function params = compute_hmm_stats(params)
+
+Kmax = numel(params.hmm_fits.hmm);
+params.hmm_fits.K = 1:Kmax;
+for k = 1:Kmax
+    params.hmm_fits.nparams(k) = params.hmm_fits.hmm{k}.nparams;
+end
+Ntrials = params.mle_fits.ndata;
+params.hmm_fits.bic = 2*params.hmm_fits.nll + 0.5*params.hmm_fits.nparams*log(Ntrials);
+end
+
+%--------------------------------------------------------------------------
+function [hmm,ll,exitflag,output] = compute_hmm1(mle_fits)
+
+% Create first component from MLE fits
+hmm = [];
+hmm.D = size(mle_fits.x_best,2);
+hmm.K = 1;
+hmm.mu = mle_fits.x_best;
+hmm.pi = 1;
+hmm.A = 1;
+hmm.lZ = -mle_fits.nll_best;
+hmm.ell = [];
+hmm.Pk = ones(1,mle_fits.ndata);
+hmm.nparams = numel(hmm.mu);
+
+ll = -mle_fits.nll_best;
+exitflag = 0;
+output = [];
+
+end
+
+%--------------------------------------------------------------------------
 function params = compute_vbmc_stats(params)
 
-[exitflag,best,idx_best,stats] = vbmc_diagnostics(params.vbmc_fits.vps);
+[exitflag,best,idx_best,stats] = vbmc_diagnostics(params.vbmc_fits.vp);
 params.vbmc_fits.diagnostics.exitflag = exitflag;
 params.vbmc_fits.diagnostics.best = best;
 params.vbmc_fits.diagnostics.idx_best = idx_best;

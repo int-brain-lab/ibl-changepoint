@@ -23,14 +23,26 @@ end
 
 %% Split multiple sessions
 if numel(sessions) > 1
-    nLL = zeros(1,numel(sessions));
+    nLL = [];
     output = [];
     for iSession = 1:numel(sessions)
         idx_session = data.tab(:,2) == sessions(iSession);
         data1_tab = data.tab(idx_session,:);
         data1 = format_data(data1_tab,data.filename,[data.fullname '_session' num2str(sessions(iSession))]);
+        
+        params1 = params;
+        
+        % If 50/50 blocks are used, the mouse has knowledge of that
+        if ischar(params.p0) && strcmpi(params.p0,'ideal')
+            if data1.p_true(1) == 0.5
+                params1.p0 = [0 0 0 1];
+            else
+                params1.p0 = [1 1 0 0]/2;                
+            end
+        end
+        
         if nargout > 1
-            [nLL(iSession),output1] = changepoint_bayesian_nll(params,data1,pflag);
+            [nLL_temp,output1] = changepoint_bayesian_nll(params1,data1,pflag);
             if isempty(output)
                 output = output1;
             else
@@ -40,10 +52,10 @@ if numel(sessions) > 1
                 output.resp_model = [output.resp_model; output1.resp_model];
             end
         else
-            nLL(iSession) = changepoint_bayesian_nll(params,data1,pflag);
+            nLL_temp = changepoint_bayesian_nll(params1,data1,pflag);
         end
+        nLL = [nLL; nLL_temp];
     end
-    nLL = sum(nLL);
     return;
 end
 
@@ -120,6 +132,10 @@ Psi(1,1,:) = 1/Nprobs;
 P = zeros(NumTrials+1,Nprobs);      % Posterior over state
 P(1,:) = post(1,:);
 
+L = size(H,1);  % Width of prior over run lengths
+% Slice with nonzero hazard function (probability of change)
+idxrange = (size(post,1)-L+1:size(post,1));
+
 runlength_post = [];    fullpost = [];
 if ~pflag; runlength_post = zeros(NumTrials,size(post,1)); end
 
@@ -127,16 +143,6 @@ if ~pflag; runlength_post = zeros(NumTrials,size(post,1)); end
 if save_fullpost; fullpost = zeros(NumTrials,size(post,1),Nprobs); end
 
 for t = 1:NumTrials        
-    %t
-    % [post,Psi,pi_post] = bayesianOCPDupdate(data.C(t),post,Psi,Tmat,H,p_vec3);
-
-
-    %if mod(t,100) == 0
-    %    t
-    %end
-    L = size(H,1);  % Width of prior over run lengths
-    % Slice with nonzero hazard function (probability of change)
-    idxrange = (size(post,1)-L+1:size(post,1));
 
     % Posterior over pi_i before observing C_t
     pi_post = bsxfun(@times, Psi, Tmat);
@@ -201,12 +207,13 @@ for t = 1:NumTrials
 
     % 7. More bookkeeping
     
-    tt = sum(post,2);
-
     % The predictive posterior is about the next trial
     P(t+1,:) = pi_post;
-    if ~pflag; runlength_post(t,:) = tt/sum(tt); end
-
+    
+    if ~pflag
+        tt = sum(post,2);
+        runlength_post(t,:) = tt/sum(tt);
+    end
     if save_fullpost; fullpost(t,:,:) = post; end
 end
     

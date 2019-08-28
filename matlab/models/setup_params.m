@@ -67,6 +67,8 @@ while iParam <= numel(params.names)
                 params.p_vec(idx_max) = params.prob_high;
             case 'beta_hyp' % Square root representation
                 params.beta_hyp = params.beta_hyp.^2;
+            case 'contrast_sigma'
+                params.contrast_sigma = exp(params.contrast_sigma);
         end
     end
     
@@ -85,6 +87,12 @@ while iParam <= numel(params.names)
                 bvec = log([0.001,0.5,0.02,0.2,0.05]);
             case {'nakarushton_neff_left','nakarushton_neff_right'}
                 bvec = log([0.1,1e3,1,100,1]);
+                
+            % Contrast sensory noise model
+            case 'contrast_sigma'
+                bvec = log([0.005,10,0.01,2,0.3]);
+            case 'contrast_epsilon'
+                bvec = [0,1,0.01,0.2,0.05];
                 
             % Other sensory and decision-making parameters
             case 'sigma'
