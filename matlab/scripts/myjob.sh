@@ -45,9 +45,10 @@ switch runtype
 		train_set='${TRAINSET}'
 		fit_all_unbiased
 	case 'fit'
-		% model_names = {'changepoint_nakarushton_runlength_probs'};
-		% model_names = {'changepoint_nakarushton'};
-		% model_names = {'omniscient_fixedprior_nakarushton'};
+		% model_names = {'changepoint_contrastnoise_runlength_probs'};
+		% model_names = {'changepoint_contrastnoise'};
+		% model_names = {'omniscient_contrastnoise_fixedprior'};
+		% model_names = {'exponential_contrastnoise'};
 		model_names = {'$SECONDPARAM'};
 		mouse_name = ['$PARAMS'];
 		% mouse_name = ['$PARAMS' '_half2'];
