@@ -30,19 +30,8 @@ if numel(sessions) > 1
         data1_tab = data.tab(idx_session,:);
         data1 = format_data(data1_tab,data.filename,[data.fullname '_session' num2str(sessions(iSession))]);
         
-        params1 = params;
-        
-        % If 50/50 blocks are used, the mouse has knowledge of that
-        if ischar(params.p0) && strcmpi(params.p0,'ideal')
-            if data1.p_true(1) == 0.5
-                params1.p0 = [0 0 0 1];
-            else
-                params1.p0 = [1 1 0 0]/2;                
-            end
-        end
-        
         if nargout > 1
-            [nLL_temp,output1] = changepoint_bayesian_nll(params1,data1,pflag);
+            [nLL_temp,output1] = changepoint_bayesian_nll(params,data1,pflag);
             if isempty(output)
                 output = output1;
             else
@@ -52,7 +41,7 @@ if numel(sessions) > 1
                 output.resp_model = [output.resp_model; output1.resp_model];
             end
         else
-            nLL_temp = changepoint_bayesian_nll(params1,data1,pflag);
+            nLL_temp = changepoint_bayesian_nll(params,data1,pflag);
         end
         nLL = [nLL; nLL_temp];
     end
@@ -63,6 +52,16 @@ end
 
 p_vec = params.p_vec;
 Nprobs = numel(p_vec);          % # states
+
+% If 50/50 blocks are used, the mouse has knowledge of that
+p0 = params.p0;
+if ischar(p0) && strcmpi(p0,'ideal')
+    if data.p_true(1) == 0.5
+        p0 = [0 0 0 1];
+    else
+        p0 = [1 1 0 0]/2;
+    end
+end
 
 runlength_min = params.runlength_min;
 runlength_max = params.runlength_max;
@@ -82,7 +81,7 @@ H = rlprior(:)./flipud(cumsum(flipud(rlprior(:))));
 
 % Posterior over run lengths (from 0 to RUNLENGTH_MAX-1)
 post = zeros(ceil(runlength_max),Nprobs);
-post(1,:) = params.p0;  % Change in the first trial
+post(1,:) = p0;  % Change in the first trial
 
 % Transition matrix
 Tmat(1,:,:) = params.Tmat;
