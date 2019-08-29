@@ -23,7 +23,7 @@ Nmodels = numel(model_list);
 tab.data = data_list;
 tab.models = model_list;
 
-tab_fields = {'nopts','loglike','aic','bic','nvps','elbo','exitflag'};
+tab_fields = {'nopts','loglike','cvll','aic','bic','nvps','elbo','exitflag'};
 
 for iField = 1:numel(tab_fields)
     tab.(tab_fields{iField}) = NaN(Ndata,Nmodels);
@@ -55,6 +55,10 @@ for iData = 1:Ndata
         tab.loglike(iData,iModel) = -nLL;
         tab.aic(iData,iModel) = 2*nLL + 2*Nparams;
         tab.bic(iData,iModel) = 2*nLL + log(Ntrials)*Nparams;
+
+        if isfield(params.mle_fits,'cv') && ~isempty(params.mle_fits.cv)
+            tab.cvll(iData,iModel) = -sum(params.mle_fits.cv.nll_test);            
+        end
         
         if isfield(params,'vbmc_fits')
             if ~isempty(params.vbmc_fits.diagnostics.best)

@@ -127,36 +127,37 @@ if ~isfield(params.mle_fits,'cv') || refit_flags(1) || refitted_flag
     params.mle_fits.cv = [];
 end
 
-for iFold = 1:2    
-    if iFold == 1; iTest = 2; else; iTest = 1; end
-    
-    % Skip cross-validation run if it already exists
-    if ~isempty(params.mle_fits.cv) && numel(params.mle_fits.cv.nll_test) >= iFold
-        continue;
+% Skip cross-validation run if there is only one session
+if numel(sessions) > 1
+    for iFold = 1:2    
+        if iFold == 1; iTest = 2; else; iTest = 1; end
+
+        % Skip cross-validation run if it already exists
+        if ~isempty(params.mle_fits.cv) && numel(params.mle_fits.cv.nll_test) >= iFold
+            continue;
+        end
+
+        params_train = params_new(model_name,data_fold{iFold});
+
+        % Cross-validation via optimization
+        x0 = [params.mle_fits.x0; params.mle_fits.x];
+        [x,fval,x0] = optimize_model(params_train,data_fold{iFold},x0);    
+
+        % Evaluate log likelihood on other fold
+        params_test = params_new(model_name,data_fold{iTest});
+        fun = @(x_) sum(nllfun(x_,params_test,data_fold{iTest}));
+
+        params.mle_fits.cv.x0{iFold} = x0;
+        params.mle_fits.cv.x{iFold} = x;
+        params.mle_fits.cv.nll_train{iFold} = fval;
+
+        fval_test = fun(x);
+        params.mle_fits.cv.nll_test(iFold) = fval_test;
+        refitted_flag = true;
+
+        if save_flag; save_model_fit(data.fullname,params); end
     end
-    
-    params_train = params_new(model_name,data_fold{iFold});
-    
-    % Cross-validation via optimization
-    x0 = [params.mle_fits.x0; params.mle_fits.x];
-    [x,fval,x0] = optimize_model(params_train,data_fold{iFold},x0);    
-    
-    % Evaluate log likelihood on other fold
-    params_test = params_new(model_name,data_fold{iTest});
-    fun = @(x_) sum(nllfun(x_,params_test,data_fold{iTest}));
-    
-    params.mle_fits.cv.x0{iFold} = x0;
-    params.mle_fits.cv.x{iFold} = x;
-    params.mle_fits.cv.nll_train{iFold} = fval;
-    
-    fval_test = fun(x);
-    params.mle_fits.cv.nll_test(iFold) = fval_test;
-    refitted_flag = true;
-    
-    if save_flag; save_model_fit(data.fullname,params); end
 end
-
-
 
 %% Hidden Markov model fit
 if hmmfit_flag
