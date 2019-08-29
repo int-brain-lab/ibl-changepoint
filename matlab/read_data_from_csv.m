@@ -6,7 +6,7 @@ function data = read_data_from_csv(fullname)
 
 % Add these modifiers to file name (preceded by underscore) to load a 
 % specific subset of the data, e.g. 'CSHL_003_unbiased'
-modifiers = {'unbiased','half1','half2','biasedonly','sess'};
+modifiers = {'unbiased','half1','half2','biasedonly','sess','odd','even'};
 
 data_modifiers = {''};
 
@@ -58,7 +58,25 @@ if any(cellfun(@(x)strcmp(x,'half1'),data_modifiers)) || ...
     end
     data_tab = data_tab(idx,:);
 end    
-    
+
+sessions = unique(data_tab(:,2));
+
+if any(cellfun(@(x)strcmp(x,'even'),data_modifiers))
+    fprintf('Removing odd-numbered sessions...\n');
+    rmsess = sessions(1:2:end);    
+    for iSess = 1:numel(rmsess)
+        data_tab(data_tab(:,2) == rmsess(iSess),:) = [];
+    end
+end
+
+if any(cellfun(@(x)strcmp(x,'odd'),data_modifiers))
+    fprintf('Removing even-numbered sessions...\n');
+    rmsess = sessions(2:2:end);    
+    for iSess = 1:numel(rmsess)
+        data_tab(data_tab(:,2) == rmsess(iSess),:) = [];
+    end
+end
+
 % Keep only a specified session or range of session (specified as 'n1-n2')
 idx = cellfun(@(x)strncmp(x,'sess',4),data_modifiers);
 if any(idx)

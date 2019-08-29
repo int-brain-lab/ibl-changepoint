@@ -51,6 +51,7 @@ if isempty(params) || refit_flags(1)
 end
 
 bounds = setup_params([],params);       % Get parameter bounds
+nvars = numel(bounds.PLB);              % Number of dimensions
 
 % Find starting point from other models
 x0_base = [];
@@ -76,50 +77,20 @@ for iOpt = 1:Nopts(1)
     if ~isempty(params.mle_fits) && numel(params.mle_fits.nll) >= iOpt
         continue;
     end
-        
-    nvars = numel(bounds.PLB);  % Number of dimensions
-    
+            
+    x0 = NaN(1,nvars);
     if size(opt_init,1) >= iOpt     % Use provided starting points
         x0 = opt_init(iOpt,:);
     else
-        if iOpt == 1
-            x0 = bounds.x0;
-        else
-            x0 = rand(1,nvars).*(bounds.PUB-bounds.PLB) + bounds.PLB;
-        end
+        if iOpt == 1; x0 = bounds.x0; end
         if ~isempty(x0_base) && iOpt <= ceil(Nopts(1)/3)
             x0(~isnan(x0_base)) = x0_base(~isnan(x0_base));
         end
     end
     
-    % Evaluate nLL on a bunch of quasirandom points, start from best
-    Ninit = 5*nvars;    
-    P = sobolset(nvars);
-    P = scramble(P,'MatousekAffineOwen');
-    xx = bsxfun(@plus,bsxfun(@times,net(P,Ninit),bounds.PUB-bounds.PLB),bounds.PLB);    
-    x0_list = [x0; xx];
-
-    nll0 = zeros(size(x0_list,1),1);
-    for i0 = 1:size(x0_list,1)
-        nll0(i0) = sum(nllfun(x0_list(i0,:),params,data));
-    end
-    [~,idx0] = min(nll0);
-    x0 = x0_list(idx0,:);
-
-    % Run optimization from best initial point
-    fun = @(x_) sum(nllfun(x_,params,data));
-    if bads_flag
-        MaxFunEvals = 2e3;
-        badopts = bads('defaults');
-        badopts.MaxFunEvals = MaxFunEvals;        
-        [x,fval] = bads(fun,x0,...
-            bounds.LB,bounds.UB,bounds.PLB,bounds.PUB,[],badopts);
-    else
-        fminopts.Display = 'iter';
-        [x,fval] = fmincon(fun,x0,...
-            [],[],[],[],bounds.LB,bounds.UB,[],fminopts);            
-    end
-    
+    % Fit model via optimization
+    [x,fval,x0] = optimize_model(params,data,x0);
+        
     params.mle_fits.x0(iOpt,:) = x0;
     params.mle_fits.x(iOpt,:) = x;
     params.mle_fits.nll(iOpt) = fval;
@@ -133,6 +104,59 @@ end
 
 params.mle_fits.x
 params.mle_fits.nll
+
+%% Cross-validated maximum-likelihood fit
+
+% Build only-even and only-odd sessions datasets
+sessions = unique(data.tab(:,2));
+tab = data.tab;
+rmsess = sessions(1:2:end);    
+for iSess = 1:numel(rmsess)
+    tab(tab(:,2) == rmsess(iSess),:) = [];
+end
+data_fold{1} = format_data(tab,data.filename,data.fullname);
+
+tab = data.tab;
+rmsess = sessions(2:2:end);    
+for iSess = 1:numel(rmsess)
+    tab(tab(:,2) == rmsess(iSess),:) = [];
+end
+data_fold{2} = format_data(tab,data.filename,data.fullname);
+
+if ~isfield(params.mle_fits,'cv') || refit_flags(1) || refitted_flag
+    params.mle_fits.cv = [];
+end
+
+for iFold = 1:2    
+    if iFold == 1; iTest = 2; else; iTest = 1; end
+    
+    % Skip cross-validation run if it already exists
+    if ~isempty(params.mle_fits.cv) && numel(params.mle_fits.cv.nll_test) >= iFold
+        continue;
+    end
+    
+    params_train = params_new(model_name,data_fold{iFold});
+    
+    % Cross-validation via optimization
+    x0 = [params.mle_fits.x0; params.mle_fits.x];
+    [x,fval,x0] = optimize_model(params_train,data_fold{iFold},x0);    
+    
+    % Evaluate log likelihood on other fold
+    params_test = params_new(model_name,data_fold{iTest});
+    fun = @(x_) sum(nllfun(x_,params_test,data_fold{iTest}));
+    
+    params.mle_fits.cv.x0{iFold} = x0;
+    params.mle_fits.cv.x{iFold} = x;
+    params.mle_fits.cv.nll_train{iFold} = fval;
+    
+    fval_test = fun(x);
+    params.mle_fits.cv.nll_test(iFold) = fval_test;
+    refitted_flag = true;
+    
+    if save_flag; save_model_fit(data.fullname,params); end
+end
+
+
 
 %% Hidden Markov model fit
 if hmmfit_flag
@@ -294,7 +318,7 @@ hmm.Pk = ones(1,mle_fits.ndata);
 hmm.nparams = numel(hmm.mu);
 
 ll = -mle_fits.nll_best;
-exitflag = 0;
+exitflag = 1;
 output = [];
 
 end
