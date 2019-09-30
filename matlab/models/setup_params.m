@@ -126,11 +126,11 @@ while iParam <= numel(params.names)
                 
             % Psychometric function parameters
             case 'psycho_mu'
-                bvec = [-1,1,-0.2,0.2,0];
+                bvec = [-1,1,-0.4,0.4,0];
             case 'psycho_sigma'
-                bvec = log([0.001,10,0.01,1,0.1]);
+                bvec = log([0.001,10,0.01,0.5,0.1]);
             case {'psycho_gammalo','psycho_gammahi'}
-                bvec = [0,0.5,0.01,0.1,0.05];
+                bvec = [0,0.5,0.01,0.4,0.05];
         end
         
         bounds.LB = [bounds.LB,bvec(1)*ones(1,pnum)];

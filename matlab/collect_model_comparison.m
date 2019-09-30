@@ -23,7 +23,7 @@ Nmodels = numel(model_list);
 tab.data = data_list;
 tab.models = model_list;
 
-tab_fields = {'nopts','loglike','cvll','aic','bic','nvps','elbo','exitflag'};
+tab_fields = {'ntrials','nopts','loglike','cvll','aic','bic','nvps','elbo','exitflag'};
 
 for iField = 1:numel(tab_fields)
     tab.(tab_fields{iField}) = NaN(Ndata,Nmodels);
@@ -51,6 +51,7 @@ for iData = 1:Ndata
                 
         Nparams = numel(params.theta);
         
+        tab.ntrials(iData,iModel) = params.mle_fits.ndata;
         tab.nopts(iData,iModel) = size(params.mle_fits.x,1);
         tab.loglike(iData,iModel) = -nLL;
         tab.aic(iData,iModel) = 2*nLL + 2*Nparams;

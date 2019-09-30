@@ -7,7 +7,17 @@ end
 
 xrnd = get_posterior_samples(params,1e6);
 
+bounds = setup_params([],params);
+bb = [bounds.PLB; bounds.PUB];
+
+if isfield(params,'logspace')
+    logspace = logical(params.logspace);
+    xrnd(:,logspace) = exp(xrnd(:,logspace));
+    bb(:,logspace) = exp(bb(:,logspace));
+end
+
+
 pnames = params.names;
 pnames = cellfun(@(str) strrep(str,'_','-'),pnames,'UniformOutput',false);
 
-cornerplot(xrnd,pnames);
+cornerplot(xrnd,pnames,[],bb);

@@ -1,10 +1,10 @@
 % Plot parameters from fitted changepoint model
 
 vp = [];
-mice_list = get_mice_list([],[]);
+mice_list = get_mice_list(3);
 % model_name = 'changepoint_nakarushton_runlength_probs_lapse';
-model_name = 'changepoint_nakarushton_runlength_probs_lapse';
-% model_name = 'exponential_nakarushton_lapse';
+% model_name = 'changepoint_nakarushton_runlength_probs_lapse';
+model_name = 'exponential_contrastnoise';
 theta = [];
 
 for iMouse = 1:numel(mice_list)
