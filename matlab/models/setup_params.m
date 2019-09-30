@@ -121,6 +121,8 @@ while iParam <= numel(params.names)
                 bvec = [1e-6,1-1e-6,0.01,0.99,0.5];
             case {'beta_hyp'}
                 bvec = sqrt([0,100,0.1,10,0.1]);
+            case {'beta_w'}
+                bvec = [0.5,1,0.51,0.9,0.51];
             case {'lnp_hyp'}
                 bvec = log([0.001,1000,0.1,10,1]);
                 

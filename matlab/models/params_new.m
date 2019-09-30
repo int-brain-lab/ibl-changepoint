@@ -274,11 +274,22 @@ else
         params.names{end+1} = 'runlength_tau';
 
         if contains(model_name,'hyperprobs')
-            params.lnp_hyp = zeros(1,4);            
+            params.lnp_hyp = zeros(1,10);            
             for i = 1:numel(params.lnp_hyp)
                 params.names{end+1} = 'lnp_hyp';
             end
             extra_features{end+1} = 'hyperprobs';            
+        elseif contains(model_name,'betamix')
+            % Mixture of Beta hyperprior on observations
+            params.beta_hyp = sqrt([0.1,0.1,0.1,0.1]);      % Little bias by default
+            params.beta_w = 0.51;
+            
+            params.names{end+1} = 'beta_hyp';
+            params.names{end+1} = 'beta_hyp';
+            params.names{end+1} = 'beta_hyp';
+            params.names{end+1} = 'beta_hyp';
+            params.names{end+1} = 'beta_w';
+            
         else
             % Beta hyperprior on observations
             params.beta_hyp = sqrt([0.1,0.1]);      % Little bias by default
