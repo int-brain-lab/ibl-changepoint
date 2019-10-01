@@ -47,15 +47,15 @@ switch runtype
 	case 'fit'
 		% model_names = {'changepoint_contrastnoise_runlength_probs'};
 		% model_names = {'changepoint_contrastnoise'};
-		% model_names = {'omniscient_contrastnoise_fixedprior'};
+		% model_names = {'omniscient_contrastnoise_fixedfreeprior'};
 		% model_names = {'exponential_contrastnoise'};
 		model_names = {'$SECONDPARAM'};
 		mouse_name = ['$PARAMS'];
 		% mouse_name = ['$PARAMS' '_half2'];
 		Nopts = [10,5];
-        	hmm_flag = true;
+        	hmm_flag = false;
 		vbmc_flag = false;
-		refit_flags = [false,false,false];
+		refit_flags = [true,false,false];
 		modelfits = batch_model_fit(model_names,mouse_name,Nopts,hmm_flag,vbmc_flag,refit_flags);
 	case 'learn'
 		mouse_name = ['$PARAMS'];
