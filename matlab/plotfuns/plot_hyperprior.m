@@ -15,6 +15,7 @@ pvec = zeros(numel(mice_name),np);
 
 nrows = 7;
 ncols = 8;
+MinTrials = 900;
 
 for iMouse = 1:numel(mice_name)
     
@@ -34,6 +35,10 @@ for iMouse = 1:numel(mice_name)
     lnZ = max(lnpvec);
     pvec(iMouse,:) = exp(lnpvec - lnZ)/sum(exp(lnpvec - lnZ)*dx);
     
+    if params.mle_fits.ndata < MinTrials
+        pvec(iMouse,:) = NaN;
+    end    
+    
     plot(xx,pvec(iMouse,:),'k-','LineWidth',1); hold on;    
     
     name = mice_name{iMouse};
@@ -44,7 +49,7 @@ for iMouse = 1:numel(mice_name)
 end
 
 subplot(nrows,ncols,iMouse+1);
-plot(xx,mean(pvec),'-k','LineWidth',3);
+plot(xx,nanmean(pvec),'-k','LineWidth',3);
 prettyplot('Average mouse',fontsize);
 
 end

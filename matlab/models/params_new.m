@@ -290,6 +290,8 @@ else
             params.names{end+1} = 'beta_hyp';
             params.names{end+1} = 'beta_w';
             
+        elseif contains(model_name,'nobias')
+            params.beta_hyp = [0,0];
         else
             % Beta hyperprior on observations
             params.beta_hyp = sqrt([0.1,0.1]);      % Little bias by default
