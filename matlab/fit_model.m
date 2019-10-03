@@ -1,23 +1,27 @@
-function [params,data,refitted_flag] = fit_model(model_name,data,Nopts,hmmfit_flag,vbmc_flag,refit_flags,opt_init,save_flag,empirical_list)
+function [params,data,refitted_flag] = fit_model(model_name,data,Nopts,methods_flags,refit_flags,opt_init,save_flag,empirical_list)
 %FIT_MODEL Fit model MODEL_NAME to dataset DATA.
 
 % # restarts for fitting procedures (MLE and variational inference)
 if nargin < 3 || isempty(Nopts); Nopts = [10,5]; end
 if numel(Nopts) > 1; Nvbmc = Nopts(2); else; Nvbmc = ceil(Nopts(1)/2); end
 
-% Compute state transitions with Hidden Markov model fitting
-if nargin < 4 || isempty(hmmfit_flag); hmmfit_flag = false; end
+% Which advanced fitting methods should be applied?
+if nargin < 4 || isempty(methods_flags); methods_flags = false; end
 
-% Get approximate posteriors with Variational Bayesian Monte Carlo
-if nargin < 5 || isempty(vbmc_flag); vbmc_flag = false; end
+Nmethods = 3;
+if numel(methods_flags) < Nmethods; methods_flags = [methods_flags, false(1,Nmethods-numel(methods_flags))]; end
+
+hmmfit_flag = methods_flags(1); % Compute state transitions with Hidden Markov model fitting
+vbmc_flag = methods_flags(2);   % Get approximate posteriors with Variational Bayesian Monte Carlo
+mcmc_flag = methods_flags(3);   % Get approximate posteriors via MCMC
 
 % Force refits even if fit already exists (default is FALSE)
-if nargin < 6 || isempty(refit_flags); refit_flags = false; end
-if isscalar(refit_flags); refit_flags = refit_flags*ones(1,3); end
-% Flags are: 1 for MLE, 2 for HMM, 3 for VBMC
+if nargin < 5 || isempty(refit_flags); refit_flags = false; end
+if isscalar(refit_flags); refit_flags = refit_flags*ones(1,4); end
+% Flags are: 1 for MLE, 2 for HMM, 3 for VBMC, 4 for MCMC
 
 % Starting point(s) for the first fit
-if nargin < 7; opt_init = []; end
+if nargin < 6; opt_init = []; end
 if isstruct(opt_init); opt_init = {opt_init}; end
 if iscell(opt_init)
     for iOpt = 1:numel(opt_init)
@@ -27,10 +31,10 @@ if iscell(opt_init)
 end
 
 % Save fits
-if nargin < 8 || isempty(save_flag); save_flag = false; end
+if nargin < 7 || isempty(save_flag); save_flag = false; end
 
 % List of datasets for empirical Bayes prior
-if nargin < 9
+if nargin < 8
     empirical_list = [];
 end
 empirical_bayes = iscell(empirical_list) || (~isempty(empirical_list) && ~(empirical_list == false));
@@ -203,7 +207,7 @@ if hmmfit_flag
     
 end
 
-
+%% Variational Bayesian Monte Carlo (VBMC)
 if vbmc_flag
     
     if ~isfield(params,'vbmc_fits') || isempty(params.vbmc_fits) || refit_flags(3)
@@ -274,8 +278,44 @@ if vbmc_flag
         params = compute_vbmc_stats(params);
         
         if save_flag; save_model_fit(data.fullname,params); end
-    end
+    end    
+end
 
+%% Markov Chain Monte Carlo (via slice sampling)
+if mcmc_flag
+    
+    if ~isfield(params,'mcmc_fits') || isempty(params.mcmc_fits) || refit_flags(4)
+        params.mcmc_fits = [];
+    end
+    
+    bounds = setup_params([],params);       % Get parameter bounds    
+    x0 = params.theta;
+    mcmc_fun = @(x_) -sum(nllfun(x_,params,data)); % + logprior(x_);    
+    
+    Widths = bounds.PUB - bounds.PLB;
+    Nsamples = 1e3;
+    mcmc_opts.Thin = 3;
+    mcmc_opts.Burnin = Nsamples;
+    mcmc_opts.Display = 'notify';
+    mcmc_opts.Diagnostics = true;
+    
+    for iOpt = 1:Nvbmc        
+        % Skip MCMC run if it already exists
+        if ~isempty(params.mcmc_fits) && numel(params.mcmc_fits.samples) >= iOpt ...
+                && ~isempty(params.mcmc_fits.samples{iOpt})
+            continue;
+        end
+        
+        [samples,fvals,exitflag,output] = ...
+            slicesamplebnd(mcmc_fun,x0,Nsamples,Widths,bounds.LB,bounds.UB,mcmc_opts);        
+
+        % Store results
+        params.mcmc_fits.samples{iOpt} = samples;
+        params.mcmc_fits.output{iOpt} = output;
+        
+        refitted_flag = true;        
+        if save_flag; save_model_fit(data.fullname,params); end
+    end
     
 end
 

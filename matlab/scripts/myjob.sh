@@ -53,19 +53,19 @@ switch runtype
 		mouse_name = ['$PARAMS'];
 		% mouse_name = ['$PARAMS' '_half2'];
 		Nopts = [10,5];
-        hmm_flag = false;
-		vbmc_flag = false;
-		refit_flags = [false,false,false];
-		modelfits = batch_model_fit(model_names,mouse_name,Nopts,hmm_flag,vbmc_flag,refit_flags);
-    case 'prior'
+        hmm_flag = false;	vbmc_flag = false;  mcmc_flag = false;
+        methods_flags = [hmm_flag,vbmc_flag,mcmc_flag];
+		refit_flags = [false,false,false,false];
+		modelfits = batch_model_fit(model_names,mouse_name,Nopts,methods_flags,refit_flags);
+    case {'prior1','prior2'}
 		model_names = {'exponential_contrastnoise_hyperprobs'};
 		mouse_name = ['$PARAMS'];
-		Nopts = [10,5];
-        hmm_flag = false;
-		vbmc_flag = false;
-		refit_flags = [false,false,false];
-		modelfits = batch_model_fit(model_names,[mouse_name '_endtrain'],Nopts,hmm_flag,vbmc_flag,refit_flags);
-		modelfits = batch_model_fit(model_names,[mouse_name '_unbiased'],Nopts,hmm_flag,vbmc_flag,refit_flags);
+		Nopts = [10,4];
+        hmm_flag = false;	vbmc_flag = false;  mcmc_flag = true;
+        methods_flags = [hmm_flag,vbmc_flag,mcmc_flag];
+		refit_flags = [false,false,false,false];
+        if strcmpi(runtype,'prior1'); suffix = 'endtrain'; else; suffix = 'unbiased'; end
+        modelfits = batch_model_fit(model_names,[mouse_name '_' suffix],Nopts,methods_flags,refit_flags);
 	case 'learn'
 		mouse_name = ['$PARAMS'];
 		data_mod='${SECONDPARAM}';

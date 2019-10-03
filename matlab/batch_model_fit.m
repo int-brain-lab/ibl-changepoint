@@ -1,15 +1,13 @@
-function modelfits = batch_model_fit(model_names,data_name,Nopts,hmmfit_flag,vbmc_flag,refit_flags,empirical_list)
+function modelfits = batch_model_fit(model_names,data_name,Nopts,methods_flags,refit_flags,empirical_list)
 %BATCH_MODEL_FIT Fit a batch of models and save results.
 
 % TODO: Change saving method to separate files for each data/model
 
 if nargin < 3 || isempty(Nopts); Nopts = [10,5]; end
 if numel(Nopts) > 1; Nvbmc = Nopts(2); else; Nvbmc = ceil(Nopts(1)/2); end
-
-if nargin < 4 || isempty(hmmfit_flag); hmmfit_flag = false; end
-if nargin < 5 || isempty(vbmc_flag); vbmc_flag = false; end
-if nargin < 6 || isempty(refit_flags); refit_flags = false(1,3); end
-if nargin < 7; empirical_list = []; end
+if nargin < 4; methods_flags = []; end
+if nargin < 5 || isempty(refit_flags); refit_flags = false(1,4); end
+if nargin < 6; empirical_list = []; end
 
 close all;
 
@@ -47,7 +45,7 @@ for iModel = 1:numel(model_names)
     
     % Fit models
     params = fit_model(model_names{iModel},data, ...
-        [Nopts(1),Nvbmc],hmmfit_flag,vbmc_flag,refit_flags,[],1,empirical_list);       
+        [Nopts(1),Nvbmc],methods_flags,refit_flags,[],1,empirical_list);       
         
     % Store fits
     modelfits.params{end+1} = params;

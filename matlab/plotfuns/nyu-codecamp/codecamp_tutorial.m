@@ -25,7 +25,7 @@ plot_posterior(params);
 
 dataset1 = 'NYU-01_sess1_unbiased';
 data1 = read_data_from_csv(dataset1);
-params1 = fit_model('psychofun',data1,[1,1],0,1);
+params1 = fit_model('psychofun',data1,[1,1],[false,true]);
 
 params1.logspace = logical([0 1 0 0]);
 plot_posterior(params1);

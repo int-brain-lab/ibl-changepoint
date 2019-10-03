@@ -45,6 +45,9 @@ test_models{end+1} = 'changepoint_doublenoise';
 %compute_posteriors_flag = true;
 compute_posteriors_flag = false;
 
+% Advanced fitting methods
+methods_flags = [false,compute_posteriors_flag];
+
 % Psychometric curve at zero contrast for a given block
 psycho0 = @(psy,block) psychofun(0,[psy.psycho_mu(block),psy.psycho_sigma(block),psy.psycho_gammalo(block),psy.psycho_gammahi(block)]);
 
@@ -53,7 +56,7 @@ for iMouse = 1:numel(mice_list)
     %% First, fit psychometric curve of all biased sessions
     
     % Fit psychometric curves for all blocks
-    modelfits_psy = batch_model_fit('psychofun',mice_list{iMouse},Nopts_psy,0,compute_posteriors_flag,0);
+    modelfits_psy = batch_model_fit('psychofun',mice_list{iMouse},Nopts_psy,methods_flags,0);
     idx = find(cellfun(@(p) strcmp(p.model_name,'psychofun'),modelfits_psy.params),1);
     psy_data = modelfits_psy.params{idx};
     bias_shift.data(iMouse,1) = psy_data.psycho_mu(3) - psy_data.psycho_mu(1);
@@ -70,7 +73,7 @@ for iMouse = 1:numel(mice_list)
     train_filename = [mice_list{iMouse} '_' train_set];
     
     % Fit all models on training data
-    modelfits = batch_model_fit(train_models,train_filename,Nopts,0,compute_posteriors_flag,0);
+    modelfits = batch_model_fit(train_models,train_filename,Nopts,methods_flags,0);
     
     %% Third, simulate ideal change-point observer given training models
     if 1    
@@ -106,7 +109,7 @@ for iMouse = 1:numel(mice_list)
                 gendata = model_gendata(params1,data_all,nreps);
 
                 % Fit psychometric curve to model-generated data
-                psy_model = fit_model('psychofun',gendata,1,0,0,1,psy_data);
+                psy_model = fit_model('psychofun',gendata,1,false,1,psy_data);
                 bias_shift.(test_models{iModel})(iMouse,iSample) = ...
                     psy_model.psycho_mu(3) - psy_model.psycho_mu(1);
 

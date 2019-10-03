@@ -11,6 +11,9 @@ refit_flag = [false,false];  % Refit already existing fits?
 % Compute posterior distributions over parameters?
 compute_posteriors_flag = true;
 
+% Advanced fitting methods
+methods_flags = [false,compute_posteriors_flag];
+
 empirical_list = get_mice_list('strict_jul2019'); % Datasets for empirical Bayes
 
 empirical_endtrain = [];
@@ -26,7 +29,7 @@ for iMouse = 1:numel(mice_list)
     data_name = mouse_name;
 
     % First, fit psychometric curves for all sessions
-    psyfit_all = batch_model_fit('psychofun',data_name,Nopts_psy,0,compute_posteriors_flag,refit_flag,empirical_list);
+    psyfit_all = batch_model_fit('psychofun',data_name,Nopts_psy,methods_flags,refit_flag,empirical_list);
 
     % Then, fit separately each session
     data = read_data_from_csv(data_name);
@@ -43,7 +46,7 @@ for iMouse = 1:numel(mice_list)
     for iSession = 1:numel(sessions)
         fprintf('Fitting session %d / %d...\n',sessions(iSession),numel(sessions));
         psyfit_sessions{iSession} = batch_model_fit('psychofun', ...
-            [data_name '_sess' num2str(sessions(iSession))],Nopts_psy,0,compute_posteriors_flag,refit_flag,empirical_list);
+            [data_name '_sess' num2str(sessions(iSession))],Nopts_psy,methods_flags,refit_flag,empirical_list);
     end
     
     %% Fit psychometric curves of last three training sessions
@@ -51,7 +54,7 @@ for iMouse = 1:numel(mice_list)
     data_name = [mouse_name '_endtrain'];
     
     % First, fit psychometric curves for all sessions
-    psyfit_all_endtrain = batch_model_fit('psychofun',data_name,Nopts_psy,0,compute_posteriors_flag,refit_flag,empirical_endtrain);
+    psyfit_all_endtrain = batch_model_fit('psychofun',data_name,Nopts_psy,methods_flags,refit_flag,empirical_endtrain);
     
     % Then, fit separately each session
     data = read_data_from_csv(data_name);
@@ -60,7 +63,7 @@ for iMouse = 1:numel(mice_list)
     for iSession = 1:numel(sessions)
         fprintf('Fitting training session %d / %d...\n',sessions(iSession),numel(sessions));
         psyfit_sessions_endtrain{iSession} = batch_model_fit('psychofun', ...
-            [data_name '_sess' num2str(sessions(iSession))],Nopts_psy,0,compute_posteriors_flag,refit_flag,empirical_endtrain);
+            [data_name '_sess' num2str(sessions(iSession))],Nopts_psy,methods_flags,refit_flag,empirical_endtrain);
     end
 
 
