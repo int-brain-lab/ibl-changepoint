@@ -211,6 +211,8 @@ else
     %% Parameters for change-point observer only
 
     if strcmp(base_model,'changepoint')
+        %% CHANGE-POINT OBSERVER MODEL
+        
         % Min and max run lengths
         params.runlength_min = 20;
         params.runlength_max = 100;
@@ -264,15 +266,23 @@ else
         end
         
     elseif strcmp(base_model,'changelearn')
-        
+    %% CHANGE-POINT LEARNER MODEL
+    
         params.changeparams = params_new(['changepoint_runlength_probs' extra_model],data);
-        
-    elseif strcmp(base_model,'exponential')
-                
+
+    elseif strcmp(base_model,'exponential') 
+    %% EXPONENTIAL AVERAGING MODEL
+    
         % Function handle to change-point prior
         params.runlength_tau = 60;
         params.names{end+1} = 'runlength_tau';
 
+        if contains(model_name,'linweight')
+            params.contrastweights = 0.5;            
+            params.names{end+1} = 'contrastweights';            
+            extra_features{end+1} = 'contrast-weighted';
+        end
+        
         if contains(model_name,'hyperprobs')
             params.lnp_hyp = zeros(1,10);            
             for i = 1:numel(params.lnp_hyp)

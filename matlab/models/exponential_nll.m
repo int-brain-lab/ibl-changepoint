@@ -54,8 +54,22 @@ NumTrials = size(data.C,1);
 tau = params.runlength_tau;
 
 windowSize = 100;
-Lcounts = data.C == 1;
-Rcounts = data.C ~= 1;
+
+if contains(params.model_name,'linweight')
+    ww = params.contrastweights;
+    p = polyfit([0,1],[ww,1],1);
+        
+    Lcounts = zeros(size(data.C));
+    idx = data.C == 1;
+    Lcounts(idx) = data.contrasts(idx)*p(1) + p(2);
+    
+    Rcounts = zeros(size(data.C));
+    idx = data.C ~= 1;
+    Rcounts(idx) = data.contrasts(idx)*p(1) + p(2);    
+else
+    Lcounts = data.C == 1;
+    Rcounts = data.C ~= 1;
+end
 
 ff = exp(-(0:windowSize)/tau);   % Exponential filter
 

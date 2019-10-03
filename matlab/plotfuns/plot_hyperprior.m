@@ -13,9 +13,11 @@ dx = xx(2) - xx(1);
 
 pvec = zeros(numel(mice_name),np);
 
-nrows = 7;
-ncols = 8;
-MinTrials = 900;
+N = numel(mice_name)+1;
+
+nrows = floor(sqrt(N));
+ncols = ceil(N/nrows);
+MinTrials = 300;
 
 for iMouse = 1:numel(mice_name)
     
