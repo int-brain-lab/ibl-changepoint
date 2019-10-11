@@ -45,6 +45,9 @@ elseif isfield(params,'contrast_sigma')
     sigma_vec(1,:) = params.contrast_sigma(1)*ones(1,Nc);
     sigma_vec(2,:) = params.contrast_sigma(2)*ones(1,Nc);
     
+    % Adjust zero-contrast to be equal
+    sigma_vec(mu_vec == 0) = sqrt(0.5*(params.contrast_sigma(1)^2 + params.contrast_sigma(2)^2));
+    
     nf_vec = normcdf(1,mu_vec,sigma_vec) - normcdf(-1,mu_vec,sigma_vec);
 else
     mu_vec = repmat(data.mu(:),[1,numel(contrasts_vec)]);
@@ -81,6 +84,7 @@ if isfield(params,'contrast_sigma')
     dx = X(2)-X(1);
     
     contrast_eps = [params.contrast_epsilon(1)*ones(1,Nc),params.contrast_epsilon(2)*ones(1,Nc)];
+    contrast_eps([mu_vec(1,:),mu_vec(2,:)]' == 0) = mean(params.contrast_epsilon);
     
     W = bsxfun(@rdivide, bsxfun_normpdf(X,[mu_vec(1,:),mu_vec(2,:)]',[sigma_vec(1,:),sigma_vec(2,:)]'), [nf_vec(1,:),nf_vec(2,:)]');
     W = bsxfun(@plus, bsxfun(@times, W, 1-contrast_eps'), contrast_eps'/L)*dx;
