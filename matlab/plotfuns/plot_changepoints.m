@@ -1,4 +1,4 @@
-function plot_changepoints(data,params,N,titlestr,plot_type,fitinfo_flag)
+function plot_changepoints(data,params,N,titlestr,plot_type,fitinfo_flag,fontsizes)
 %PLOT_CHANGEPOINTS Plot performance around changepoints.
 
 if nargin < 2; params = []; end
@@ -6,10 +6,11 @@ if nargin < 3 || isempty(N); N = 20; end
 if nargin < 4; titlestr = []; end
 if nargin < 5 || isempty(plot_type); plot_type = 'all'; end
 if nargin < 6 || isempty(fitinfo_flag); fitinfo_flag = true; end
+if nargin < 7 || isempty(fontsizes); fontsizes = [18,14]; end
 
-fontsize = 18;
-axesfontsize = 14;
-
+fontsize = fontsizes(1);
+if numel(fontsizes) > 1; axesfontsize = fontsizes(2); else; axesfontsize = round(fontsizes(1)*0.75); end
+    
 if ischar(data); data = read_data_from_csv(data); end
 
 if ~isempty(params)
@@ -139,12 +140,13 @@ for iContrast = 1:numel(contrast_groups)
 
         h_idx1 = iContrast + (j-1)*numel(contrast_groups);
         
+        % Plot model fit
         if ~isempty(params)
             h_idx2 = iContrast + (j-1)*numel(contrast_groups) +numel(contrast_groups)*2-1;
     %        errorbar((1:numel(cc_vec))+offset,model_mean,model_stderr,...
     %            'LineStyle','none','LineWidth',2,'Color',col,'capsize',0); hold on;
             h(h_idx2) = plot(offset,p_model,...
-                'LineStyle','-','LineWidth',2,'Color',col);
+                'LineStyle','-','LineWidth',4,'Color',col);
             legtext{h_idx2} = ['model, ' legtext{h_idx1}];
         end
 
@@ -159,12 +161,13 @@ for iContrast = 1:numel(contrast_groups)
         
         legtext{h_idx1} = ['data, ' legtext{h_idx1}];
         
+        % Plot data and error bars
         errorbar(offset,p,s,...
             'LineStyle','none','LineWidth',2,'Color',col,'capsize',0); hold on;
         if iContrast == 3; marker = 's'; else; marker = 'o'; end
         
         h(h_idx1) = plot(offset,p,...
-            'LineStyle','none','LineWidth',1,'Marker',marker,'Color',col,'MarkerFaceColor',col,'MarkerEdgeColor',[1 1 1]); hold on;
+            'LineStyle','none','LineWidth',1,'Marker',marker,'Color',col,'MarkerSize',10,'MarkerFaceColor',col,'MarkerEdgeColor',[1 1 1]); hold on;
     
     end
 end
@@ -196,8 +199,10 @@ switch lower(plot_type(1))
         ytext = 'P(choice Left)';
         toptext = 'Left stimuli';
         bottomtext = 'Right stimuli';
-        text(0.1,-0.1,'Right block','Fontsize',fontsize,'Units','Normalized')
-        text(0.9,-0.1,'Left block','Fontsize',fontsize,'Units','Normalized')
+        if fitinfo_flag
+            text(0.1,-0.1,'Right block','Fontsize',fontsize,'Units','Normalized')
+            text(0.9,-0.1,'Left block','Fontsize',fontsize,'Units','Normalized')
+        end
     case 'r'
         xtext = 'Trial with respect to change point';
         ytext = 'P(choice Right)';
@@ -209,8 +214,10 @@ end
         
 xlabel(xtext,'FontSize',fontsize);
 ylabel(ytext,'FontSize',fontsize);
-text(1.05,0.95,toptext,'Units','Normalized','Fontsize',fontsize);
-text(1.05,0.05,bottomtext,'Units','Normalized','Fontsize',fontsize);
+if fitinfo_flag
+    text(1.05,0.95,toptext,'Units','Normalized','Fontsize',fontsize);
+    text(1.05,0.05,bottomtext,'Units','Normalized','Fontsize',fontsize);
+end
 set(gca,'Fontsize',axesfontsize);
         
 if plot_data_flag
