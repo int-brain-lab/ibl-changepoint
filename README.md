@@ -22,7 +22,7 @@ mouse_name = 'CSHL_005';
 data = read_data_from_csv(mouse_name);
 Nopts = 1;                      % Perform only one optimization (but you should use multiple starting points)
 params = fit_model(model_name,data,Nopts);
-plot_fit(params,data);
+plot_fit(data,params);
 ```
 
 The available models are:
