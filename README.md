@@ -17,7 +17,7 @@ As a simple example, we are going to fit an "omniscient" Bayesian observer to a 
 
 ```
 ibl_changepoint_add2path;           % Add the changepoint analysis toolbox to the Matlab path for this session
-model_name = 'omniscient_biasedlapse';
+model_name = 'omniscient_contrastnoise_biasedlapse';
 mouse_name = 'CSHL_005';
 data = read_data_from_csv(mouse_name);
 Nopts = 1;                      % Perform only one optimization (but you should use multiple starting points)
@@ -36,6 +36,10 @@ Specific features can be added to the base observer models, separated by subscri
 - `_softmax`: adds a softmax probabilistic step to the decision rule.
 - `_runlength`: adds flexibility to run-length related parameters (`changepoint` observer only).
 - `_freesym`: adds flexibility to the a-priori block probabilities for biased blocks, assuming symmetry (`changepoint` observer only).
+
+Specific noise models are added as:
+- `contrastnoise`: a simple noise model based on a noisy measurement of the contrast level.
+- `nakarusthon`: a noise model inspired by the [Naka-Rushton model](https://www.jneurosci.org/content/17/21/8621) of contrast perception.
 
 Multiple datasets and models can be fitted in batch by using the `batch_model_fit.m` function.
 
