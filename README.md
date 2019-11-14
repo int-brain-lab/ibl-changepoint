@@ -29,6 +29,7 @@ The available models are:
 - `psychofun`: simple psychometric function fit (separately for each probability level).
 - `omniscient`: "omniscient" Bayesian observer that knows the true stimulus probability in each block.
 - `changepoint`: change-point Bayesian observer that tracks the stimulus probability from trial to trial.
+- `exponential`: observer that estimates side probability as an exponentially weighted-average of last trials, with Beta prior representing additional prior observations.
 
 Specific features can be added to the base observer models, separated by subscripts:
 - `_lapse`: adds a probability `lapse_rate` of a random response with equal probability.
@@ -36,6 +37,7 @@ Specific features can be added to the base observer models, separated by subscri
 - `_softmax`: adds a softmax probabilistic step to the decision rule.
 - `_runlength`: adds flexibility to run-length related parameters (`changepoint` observer only).
 - `_freesym`: adds flexibility to the a-priori block probabilities for biased blocks, assuming symmetry (`changepoint` observer only).
+- `_nobias`: removes Beta prior over observations (`exponential` model only).
 
 Specific noise models are added as:
 - `contrastnoise`: a simple noise model based on a noisy measurement of the contrast level.
