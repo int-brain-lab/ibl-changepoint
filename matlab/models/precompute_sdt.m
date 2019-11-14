@@ -121,6 +121,11 @@ end
 
 Ncontrasts = numel(data.contrasts_vec);
 
+marginalize_contrasts = false;
+approx_marginalization = false;
+if isfield(params,'marginalize_contrasts'); marginalize_contrasts = params.marginalize_contrasts; end
+if isfield(params,'marginalize_approx'); approx_marginalization = params.marginalize_approx; end
+
 if isfield(params,'contrast_sigma')
     
     muL_vec3(1,1,:) = mu_vec(1,:);
@@ -133,15 +138,8 @@ if isfield(params,'contrast_sigma')
     loglikeL = log(mean(bsxfun(@rdivide, bsxfun_normpdf(X,muL_vec3,sigmaL_vec3),nfL_vec3),3)*(1 - contrast_eps(1)) + contrast_eps(1)/L);
     loglikeR = log(mean(bsxfun(@rdivide, bsxfun_normpdf(X,muR_vec3,sigmaR_vec3),nfR_vec3),3)*(1 - contrast_eps(end)) + contrast_eps(end)/L);
     
-elseif (isfield(params,'marginalize_contrasts') || isfield(params,'marginalize_approx')) ...    
-    && (params.marginalize_contrasts || params.marginalize_approx)
+elseif marginalize_contrasts || approx_marginalization
     % Marginalize over non-zero contrasts (assumes uniform prior over contrasts)
-
-    if isfield(params,'marginalize_approx')
-        approx_marginalization = params.marginalize_approx;
-    else
-        approx_marginalization = false;
-    end
     
     % Ignore zero-contrast
     muL_vec3(1,1,:) = mu_sc(1:Ncontrasts-1);
@@ -173,7 +171,7 @@ else
     muL(:,1) = [mu_sc(1:Ncontrasts),fliplr(mu_sc(1:Ncontrasts-1))];
     sigmaL(:,1) = [sigma_sc(1:Ncontrasts),fliplr(sigma_sc(1:Ncontrasts-1))];
     muR(:,1) = [fliplr(mu_sc(Ncontrasts+1:end)),mu_sc(Ncontrasts:end)];
-    sigmaR(:,1) = [fliplr(sigma_sc(1:Ncontrasts)),sigma_sc(Ncontrasts:end)];
+    sigmaR(:,1) = [fliplr(sigma_sc(Ncontrasts+1:end)),sigma_sc(Ncontrasts:end)];
 
     loglikeL = bsxfun(@plus,-0.5*bsxfun(@rdivide,bsxfun(@minus,X,muL),sigmaL).^2, -log(sigmaL));
     loglikeR = bsxfun(@plus,-0.5*bsxfun(@rdivide,bsxfun(@minus,X,muR),sigmaR).^2, -log(sigmaR));
