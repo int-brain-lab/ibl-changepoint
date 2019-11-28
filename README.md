@@ -29,7 +29,7 @@ The available models are:
 - `psychofun`: simple psychometric function fit (separately for each probability level).
 - `omniscient`: "omniscient" Bayesian observer that knows the true stimulus probability in each block.
 - `changepoint`: change-point Bayesian observer that tracks the stimulus probability from trial to trial.
-- `exponential`: observer that estimates side probability as an exponentially weighted-average of last trials, with Beta prior representing additional prior observations.
+- `exponential`: observer that estimates side probability as an exponentially weighted-average of last trials, with Beta prior representing additional prior observations (*pseudo-counts*).
 
 Specific features can be added to the base observer models, separated by subscripts:
 - `_lapse`: adds a probability `lapse_rate` of a random response with equal probability.
@@ -40,12 +40,20 @@ Specific features can be added to the base observer models, separated by subscri
 - `_nobias`: removes Beta prior over observations (`exponential` model only).
 
 Specific noise models are added as:
-- `contrastnoise`: a simple noise model based on a noisy measurement of the contrast level.
+- `contrastnoise`: a simple noise model based on a noisy measurement of the contrast level (recommended).
 - `nakarusthon`: a noise model inspired by the [Naka-Rushton model](https://www.jneurosci.org/content/17/21/8621) of contrast perception.
 
 Multiple datasets and models can be fitted in batch by using the `batch_model_fit.m` function.
 
 If a dataset name is suffixed with `_unbiased`, only unbiased (50/50) blocks are loaded.
+
+### Model parameters
+
+If you are interested in estimating model parameters, you can find them in the `params` struct returned by the `fit_model` function. In particular:
+
+- `params.names` contains the names of the fitted parameters.
+- `params.theta` stores a vector representing the maximum-likelihood estimate of the parameters. However, be aware that these parameters values are in a *transformed space* used for fitting (e.g., some parameters are transformed to log space, or to square-root space).
+- `params.(parameter_name)`, where `parameter_name` is one of the names of fitted parameters, contain the individual parameters used by the model (in the returned `params` struct, at their maximum-likelihood value). These are the parameters you may want to take, since they use the standard parametrization.
 
 ### Predicting optimal bias shifts
 
