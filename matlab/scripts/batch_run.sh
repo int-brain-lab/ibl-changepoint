@@ -17,7 +17,7 @@ fi
 
 #Job parameters
 RUN=$RUNTYPE
-MICELIST="sep2019"
+MICELIST="guido"
 INPUTFILE="${BASEDIR}/scripts/joblist_${MICELIST}.txt"
 MAXID=$(sed -n $= ${INPUTFILE})
 

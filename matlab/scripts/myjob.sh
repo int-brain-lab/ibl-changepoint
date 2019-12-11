@@ -8,7 +8,7 @@ export MATLAB_PREFDIR=$(mktemp -d $SLURM_JOBTMP/matlab-XXXXXX)
 
 export MATLABPATH=${MATLABPATH}:/${HOME}/${PROJECT}:${HOME}/MATLAB
 #source ${HOME}/MATLAB/setpath.sh
-export MATLABPATH="${MATLABPATH}:${HOME}/vbmc:${HOME}/vbmc/utils:${HOME}/bads:${HOME}/hmmfit"
+export MATLABPATH="${MATLABPATH}:${HOME}/vbmc:${HOME}/vbmc/utils:${HOME}/bads:${HOME}/hmmfit:${HOME}/vbmc-dev/acq:${HOME}/vbmc-dev/misc"
 
 #PROBLEMFOLDER="'${HOME}/neurobench-problems'"
 PROBLEMFOLDER="[]"
@@ -52,20 +52,20 @@ switch runtype
 		model_names = {'$SECONDPARAM'};
 		mouse_name = ['$PARAMS'];
 		% mouse_name = ['$PARAMS' '_half2'];
-		Nopts = [10,5];
-        hmm_flag = false;	vbmc_flag = false;  mcmc_flag = false;
-        methods_flags = [hmm_flag,vbmc_flag,mcmc_flag];
+		Nopts = [10,4];
+        	hmm_flag = false;  vbmc_flag = true;  mcmc_flag = false;
+        	methods_flags = [hmm_flag,vbmc_flag,mcmc_flag];
 		refit_flags = [false,false,false,false];
 		modelfits = batch_model_fit(model_names,mouse_name,Nopts,methods_flags,refit_flags);
     case {'prior1','prior2'}
 		model_names = {'exponential_contrastnoise_hyperprobs'};
 		mouse_name = ['$PARAMS'];
 		Nopts = [10,4];
-        hmm_flag = false;	vbmc_flag = false;  mcmc_flag = true;
-        methods_flags = [hmm_flag,vbmc_flag,mcmc_flag];
+        	hmm_flag = false;  vbmc_flag = false;  mcmc_flag = true;
+        	methods_flags = [hmm_flag,vbmc_flag,mcmc_flag];
 		refit_flags = [false,false,false,false];
-        if strcmpi(runtype,'prior1'); suffix = 'endtrain'; else; suffix = 'unbiased'; end
-        modelfits = batch_model_fit(model_names,[mouse_name '_' suffix],Nopts,methods_flags,refit_flags);
+        	if strcmpi(runtype,'prior1'); suffix = 'endtrain'; else; suffix = 'unbiased'; end
+        	modelfits = batch_model_fit(model_names,[mouse_name '_' suffix],Nopts,methods_flags,refit_flags);
 	case 'learn'
 		mouse_name = ['$PARAMS'];
 		data_mod='${SECONDPARAM}';
