@@ -1,8 +1,6 @@
 function modelfits = batch_model_fit(model_names,data_name,Nopts,methods_flags,refit_flags,empirical_list)
 %BATCH_MODEL_FIT Fit a batch of models and save results.
 
-% TODO: Change saving method to separate files for each data/model
-
 if nargin < 3 || isempty(Nopts); Nopts = [10,5]; end
 if numel(Nopts) > 1; Nvbmc = Nopts(2); else; Nvbmc = ceil(Nopts(1)/2); end
 if nargin < 4; methods_flags = []; end
