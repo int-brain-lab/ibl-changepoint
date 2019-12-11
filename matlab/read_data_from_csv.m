@@ -6,7 +6,7 @@ function data = read_data_from_csv(fullname)
 
 % Add these modifiers to file name (preceded by underscore) to load a 
 % specific subset of the data, e.g. 'CSHL_003_unbiased'
-modifiers = {'unbiased','half1','half2','biasedonly','sess','odd','even'};
+modifiers = {'unbiased','half1','half2','biasedonly','sess','odd','even','date'};
 
 data_modifiers = {''};
 
@@ -85,6 +85,17 @@ if any(idx)
     n = str2num(modstring(5:end));
     idx = false(size(data_tab,1),1);
     for ii = 1:numel(n); idx(data_tab(:,2) == n(ii)) = true; end
+    data_tab = data_tab(idx,:);
+end
+
+% Keep only a session from a specified date
+idx = cellfun(@(x)strncmp(x,'date',4),data_modifiers);
+if any(idx)
+    modstring = data_modifiers{idx};
+    %modstring(modstring=='-') = ':';
+    n = str2num(modstring(5:end));
+    idx = false(size(data_tab,1),1);
+    idx(data_tab(:,9) == n) = true;
     data_tab = data_tab(idx,:);
 end
 

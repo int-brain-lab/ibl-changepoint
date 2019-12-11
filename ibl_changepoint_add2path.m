@@ -11,7 +11,7 @@
 % Luigi Acerbi 2019
 
 repo_path = fileparts(mfilename('fullpath'));
-addpath([repo_path filesep 'data']);
+addpath(genpath([repo_path filesep 'data']));
 
 matlab_path = [repo_path filesep 'matlab'];
 addpath(matlab_path);

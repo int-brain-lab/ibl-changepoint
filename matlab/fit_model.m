@@ -220,12 +220,14 @@ if vbmc_flag
     vbmc_opts = vbmc('defaults');
     % vbmc_opts.Plot = 'on';
     vbmc_opts.NSgpMaxMain = 0;
-    vbmc_opts.FunEvalsPerIter = 1;
+%    vbmc_opts.FunEvalsPerIter = 1;
+    vbmc_opts.ActiveSampleFullUpdate = true;
     vbmc_opts.SearchAcqFcn = @acqmireg_vbmc;
     vbmc_opts.RetryMaxFunEvals = vbmc_opts.MaxFunEvals;
     % vbmc_opts.NoiseSize = 0.1;
     % vbmc_opts.gpNoiseFun = [1 0 1];
-    vbmc_opts.SGDStepSize = 5e-4;           % Very narrow posteriors
+    % vbmc_opts.SGDStepSize = 5e-4;           % Very narrow posteriors
+    vbmc_opts.NSentActive = '@(K) 20*K.^(2/3)';
     vbmc_opts.Bandwidth = 0;             % Deal with high-frequency noise
     % vbmc_opts.UncertaintyHandling = true;
     % vbmc_opts.gpOutwarpFun = @outwarp_negpowc1;
