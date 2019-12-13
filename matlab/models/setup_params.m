@@ -25,9 +25,10 @@ while iParam <= numel(params.names)
             end
         end
     end
+    pidx = iParam:iParam+pnum-1;
     
-    if ~isempty(theta)
-        params.(pname)(1:pnum) = theta(iParam:iParam+pnum-1);
+    if ~isempty(theta) && min(size(theta)) == 1
+        params.(pname)(1:pnum) = theta(pidx);
 
         % Extra parameter processing
         switch pname
@@ -70,6 +71,32 @@ while iParam <= numel(params.names)
             case 'contrast_sigma'
                 params.contrast_sigma = exp(params.contrast_sigma);
         end
+        
+    elseif ~isempty(theta)
+        
+        % Extra parameter processing
+        switch pname
+            case 'sigma'
+                theta(:,pidx) = exp(theta(:,pidx));
+            case {'nakarushton_response_min','nakarushton_response_delta','nakarushton_c50','nakarushton_neff_left','nakarushton_neff_right'}
+                theta(:,pidx) = exp(theta(:,pidx));
+            case 'attention_factor'
+                theta(:,pidx) = exp(theta(:,pidx));
+            case 'softmax_eta'
+                theta(:,pidx) = exp(theta(:,pidx));
+            case 'runlength_tau'
+                theta(:,pidx) = exp(theta(:,pidx));
+            case 'runlength_min'
+                theta(:,pidx) = exp(theta(:,pidx));
+            case 'psycho_sigma'
+                theta(:,pidx) = exp(theta(:,pidx));
+            case 'beta_hyp' % Square root representation
+                theta(:,pidx) = theta(:,pidx).^2;
+            case 'contrast_sigma'
+                theta(:,pidx) = exp(theta(:,pidx));
+        end
+        
+        
     end
     
     % Return parameter bounds
@@ -149,6 +176,8 @@ end
 
 if isempty(theta)
     params = bounds;
+elseif min(size(theta)) > 1
+    params = theta;
 else
     params.theta = theta;
 end
