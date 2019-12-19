@@ -24,7 +24,7 @@ switch id
         mice_list = {'CSHL_002', 'CSHL_003', 'CSHL_005', 'CSHL_008', 'CSHL_010', 'CSHL_014', 'CSHL_015', 'CSH_ZAD_001', 'CSH_ZAD_003', 'CSH_ZAD_004', 'CSH_ZAD_006', 'CSH_ZAD_007', 'CSH_ZAD_010', 'DY_001', 'DY_007', 'IBL-T1', 'IBL-T2', 'IBL-T4', 'IBL_001', 'IBL_002', 'KS002', 'KS003', 'KS004', 'KS005', 'KS014', 'KS015', 'KS016', 'KS017', 'NYU-01', 'NYU-02', 'NYU-06', 'SWC_013', 'ZM_1084', 'ZM_1085', 'ZM_1086', 'ZM_1087', 'ZM_1091', 'ZM_1092', 'ZM_1097', 'ZM_1098', 'ZM_1367', 'ZM_1371', 'ZM_1372', 'ZM_1743', 'ZM_1745', 'ZM_1746', 'ibl_witten_04', 'ibl_witten_05', 'ibl_witten_06', 'ibl_witten_12', 'ibl_witten_14', 'ibl_witten_15', 'ibl_witten_16'};
         
     case {'guido'}
-        mice_list = {'ZM_1895_date20191127','ZM_1895_date20191128','ZM_1895_date20191129','ZM_2102_date20191126','ZM_2102_date20191127','ZM_2102_date20191128'}; %'ZM_2108_date20191204','ZM_2108_date20191205','ZM_2108_date20191206'};
+        mice_list = {'ZM_1895_date20191127','ZM_1895_date20191128','ZM_1895_date20191129','ZM_2102_date20191126','ZM_2102_date20191127','ZM_2102_date20191128','ZM_2108_date20191204','ZM_2108_date20191205','ZM_2108_date20191206'};
         
     otherwise
         if ischar(id) && any(strcmp(id,all_mice))            
