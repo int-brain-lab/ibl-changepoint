@@ -40,8 +40,8 @@ Specific features can be added to the base observer models, separated by subscri
 - `_nobias`: removes Beta prior over observations (`exponential` model only).
 
 Specific noise models are added as:
-- `contrastnoise`: a simple noise model based on a noisy measurement of the contrast level (recommended).
-- `nakarusthon`: a noise model inspired by the [Naka-Rushton model](https://www.jneurosci.org/content/17/21/8621) of contrast perception.
+- `_contrastnoise`: a simple noise model based on a noisy measurement of the contrast level (recommended).
+- `_nakarusthon`: a noise model inspired by the [Naka-Rushton model](https://www.jneurosci.org/content/17/21/8621) of contrast perception.
 
 Multiple datasets and models can be fitted in batch by using the `batch_model_fit.m` function.
 
