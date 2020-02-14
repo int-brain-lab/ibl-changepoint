@@ -1,7 +1,7 @@
 function [X,pnames,params,data_names] = plot_posterior_comparison(data_names,model,color,style,mark)
 %PLOT_POSTERIOR_COMPARISON
 
-% Example: [X,pnames,params,data_names] = plot_posterior_comparison(get_mice_list('guido'),'exponential_contrastnoise',[0 0.8 0; 0 0.8 0; 0.3 1 0.3; 0 0 0.8; 0 0 0.8; 0.3 0.3 1],{'-',':','-','-',':','-'})
+% Example: [X,pnames,params,data_names] = plot_posterior_comparison(get_mice_list('guido'),'exponential_contrastnoise',[0 0.8 0; 0 0.8 0; 0.3 1 0.3; 0 0 0.8; 0 0 0.8; 0.3 0.3 1; 0.8 0 0; 0.8 0 0; 1 0.3 0.3],{'-',':','-','-',':','-','-',':','-'})
 
 if nargin < 3; color = []; end
 if nargin < 4; style = []; end
