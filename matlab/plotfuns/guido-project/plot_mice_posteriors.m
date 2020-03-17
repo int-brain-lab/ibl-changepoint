@@ -10,7 +10,7 @@ fig_pos = [1,41,1920,963];
 for iMouse = 1:numel(mice_names)
     figure(iMouse);
     session_idx = strmatch(mice_names{iMouse},mice_list);
-    [X,pnames,params,data_names] = plot_posterior_comparison(mice_list(session_idx),model_name,color_list,symbol_list);
+    [X{iMouse},pnames{iMouse},params{iMouse},data_names{iMouse}] = plot_posterior_comparison(mice_list(session_idx),model_name,color_list,symbol_list);
     set(gcf,'Position',fig_pos);
     drawnow;
     saveas(gcf,[mice_names{iMouse} '_posterior.png'],'png');
