@@ -221,8 +221,9 @@ if vbmc_flag
     % vbmc_opts.Plot = 'on';
     vbmc_opts.NSgpMaxMain = 0;
 %    vbmc_opts.FunEvalsPerIter = 1;
-    vbmc_opts.ActiveSampleFullUpdate = true;
-    vbmc_opts.SearchAcqFcn = @acqmireg_vbmc;
+    vbmc_opts.ActiveSampleFullUpdate = 2;
+%    vbmc_opts.SearchAcqFcn = @acqmireg_vbmc;
+    vbmc_opts.WarpRotoScaling = 1;
     vbmc_opts.RetryMaxFunEvals = vbmc_opts.MaxFunEvals;
     % vbmc_opts.NoiseSize = 0.1;
     % vbmc_opts.gpNoiseFun = [1 0 1];
