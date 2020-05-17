@@ -71,10 +71,33 @@ else
     Rcounts = data.C ~= 1;
 end
 
-ff = exp(-(0:windowSize)/tau);   % Exponential filter
+if isfield(params,'tau_quad')
+    [data.trial_block,data.trials2end_block] = ...
+        get_trial_number_within_blocks(data.tab);
+    
+    % Compute trial-dependent TAU
+    tau_trial = tau + params.tau_quad.*(log(data.trial_block+1) - log(params.tau_quadmu));
+    tau_trial = max(tau_trial,1);
+    
+    tau_vec = linspace(min(tau_trial), max(tau_trial),100);
+    
+    for iTau = 1:numel(tau_vec)
+        ff = exp(-(0:windowSize)/tau_vec(iTau));   % Exponential filter        
+        Lexp_avg_mat(:,iTau) = filter(ff,1,Lcounts);
+        Rexp_avg_mat(:,iTau) = filter(ff,1,Rcounts);         
+    end
+    
+    [~,idx_tau] = min(abs(bsxfun(@minus,tau_trial,tau_vec)),[],2);
+    
+    idx_vv = sub2ind([numel(tau_trial),numel(tau_vec)],(1:numel(tau_trial))',idx_tau);
+    Lexp_avg = Lexp_avg_mat(idx_vv);
+    Rexp_avg = Rexp_avg_mat(idx_vv);
+else
+    ff = exp(-(0:windowSize)/tau);   % Exponential filter
+    Lexp_avg = filter(ff,1,Lcounts);
+    Rexp_avg = filter(ff,1,Rcounts);
+end
 
-Lexp_avg = filter(ff,1,Lcounts);
-Rexp_avg = filter(ff,1,Rcounts);
 
 if isfield(params,'lnp_hyp')
     MIN_P = 1e-6;

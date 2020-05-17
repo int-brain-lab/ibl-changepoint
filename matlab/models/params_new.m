@@ -277,6 +277,15 @@ else
         params.runlength_tau = 60;
         params.names{end+1} = 'runlength_tau';
 
+        if contains(model_name,'tauquad')
+            params.tau_quad = 0;
+            params.tau_quadmu = 7;
+            
+            params.names{end+1} = 'tau_quad';
+            params.names{end+1} = 'tau_quadmu';
+            extra_features{end+1} = 'trial-dependent (quadratic)';
+        end
+        
         if contains(model_name,'linweight')
             params.contrastweights = 0.5;            
             params.names{end+1} = 'contrastweights';            

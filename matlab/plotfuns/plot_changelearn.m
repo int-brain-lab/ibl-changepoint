@@ -7,6 +7,7 @@ mice_list = get_mice_list();
 model_name = 'changelearn_nakarushton';
 data_mod = 'biasedonly';
 data_mod = [];
+exp_flags = logical([1 1, 0 0]);  % Exponentiate these parameters
 
 tmax = 1e4;
 
@@ -62,14 +63,13 @@ for i = 1:numel(mice_list)
 
     p3 = [];
     p3(1,:,:) = params.output.param_grid;
+%    p3(1,:,exp_flags) = exp(p3(1,:,exp_flags));
     mu = squeeze(sum(post_grid.*p3,2));
         
     for iParam = 1:4
-        subplot(2,2,iParam);
+        subplot(2,2,iParam);        
         
-        
-        if iParam < 3; mu(:,iParam) = exp(mu(:,iParam)); end
-        
+        if exp_flags(iParam); mu(:,iParam) = exp(mu(:,iParam)); end        
         mu_all(i,1:numel(tt),iParam) = mu(:,iParam);        
         
         % s2 = max(0,squeeze(sum(post_grid.*p3.^2,2)) - mu.^2);

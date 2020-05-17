@@ -70,6 +70,8 @@ while iParam <= numel(params.names)
                 params.beta_hyp = params.beta_hyp.^2;
             case 'contrast_sigma'
                 params.contrast_sigma = exp(params.contrast_sigma);
+            case 'tau_quadmu'
+                params.tau_quadmu = exp(params.tau_quadmu);
         end
         
     elseif ~isempty(theta)
@@ -146,6 +148,8 @@ while iParam <= numel(params.names)
                 bvec = [0.5,1-1e-6,0.51,0.99,0.8];
             case {'fixed_prior'}
                 bvec = [1e-6,1-1e-6,0.01,0.99,0.5];
+                
+            % Exponential model
             case {'beta_hyp'}
                 bvec = sqrt([0,100,0.1,10,0.1]);
             case {'beta_w'}
@@ -154,6 +158,10 @@ while iParam <= numel(params.names)
                 bvec = log([0.001,1000,0.1,10,1]);
             case {'contrastweights'}
                 bvec = [0,1,0.1,0.9,0.9];
+            case {'tau_quadmu'}
+                bvec = log([1,100,2,20,7]);                
+            case {'tau_quad'}
+                bvec = [-10,10,-1,1,0];                
                 
             % Psychometric function parameters
             case 'psycho_mu'
