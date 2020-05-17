@@ -76,7 +76,7 @@ if isfield(params,'tau_quad')
         get_trial_number_within_blocks(data.tab);
     
     % Compute trial-dependent TAU
-    tau_trial = tau + params.tau_quad.*(log(data.trial_block+1) - log(params.tau_quadmu));
+    tau_trial = tau + params.tau_quad.*(log(data.trial_block+1) - log(params.tau_quadmu)).^2;
     tau_trial = max(tau_trial,1);
     
     tau_vec = linspace(min(tau_trial), max(tau_trial),100);
