@@ -220,23 +220,17 @@ if vbmc_flag
     vbmc_opts = vbmc('defaults');
     % vbmc_opts.Plot = 'on';
     vbmc_opts.NSgpMaxMain = 0;
-%    vbmc_opts.FunEvalsPerIter = 1;
-    vbmc_opts.ActiveSampleFullUpdate = 2;
+    vbmc_opts.ActiveSampleVPUpdate = true;
+    vbmc_opts.ActiveSampleGPUpdate = true;    
 %    vbmc_opts.SearchAcqFcn = @acqmireg_vbmc;
     vbmc_opts.WarpRotoScaling = 1;
     vbmc_opts.RetryMaxFunEvals = vbmc_opts.MaxFunEvals;
     % vbmc_opts.NoiseSize = 0.1;
     % vbmc_opts.gpNoiseFun = [1 0 1];
-    % vbmc_opts.SGDStepSize = 5e-4;           % Very narrow posteriors
-    vbmc_opts.NSentActive = '@(K) 20*K.^(2/3)';
     vbmc_opts.Bandwidth = 0;             % Deal with high-frequency noise
     % vbmc_opts.UncertaintyHandling = true;
     % vbmc_opts.gpOutwarpFun = @outwarp_negpowc1;
-    
-%         w.SearchCacheFrac = 0.1; w.HPDSearchFrac = 0.9; w.HeavyTailSearchFrac = 0; w.MVNSearchFrac = 0; w.SearchAcqFcn = @vbmc_acqpropregt; w.StopWarmupThresh = 0.1; w.SearchCMAESVPInit = false;
-%         vbmc_opts.WarmupOptions = w; vbmc_opts.TolStableWarmup = 5; vbmc_opts.FastWarmup = true; vbmc_opts.NSgpMaxWarmup = 8;
-
-    
+        
     % Compute empirical Bayes (truncated) Student's t prior over parameters
     if empirical_bayes        
         if ~iscell(empirical_list)
