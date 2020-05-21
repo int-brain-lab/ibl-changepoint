@@ -7,12 +7,15 @@ switch metric
     case 'bic'
         mcm = -tab.bic;
 end
+
+mcm = mcm(all(isfinite(mcm),2),:);  % Remove incomplete fits
+
 % mcm = tab.cvll ./ tab.ntrials;
-[~,best_idx] = max(sum(mcm,1));
+[~,best_idx] = max(nanmean(mcm,1));
 mcm = mcm(:,best_idx) - mcm;
 
 xx = 1:4;
-yy = mean(mcm,1);
+yy = nanmean(mcm,1);
 
 col = [70,162,221]/255;
 

@@ -6,7 +6,7 @@ function data = read_data_from_csv(fullname)
 
 % Add these modifiers to file name (preceded by underscore) to load a 
 % specific subset of the data, e.g. 'CSHL_003_unbiased'
-modifiers = {'unbiased','half1','half2','biasedonly','sess','odd','even','date'};
+modifiers = {'unbiased','half1','half2','biasedonly','sess','odd','even','date','first'};
 
 data_modifiers = {''};
 
@@ -25,6 +25,22 @@ filename_csv = [filename '.csv'];
 
 % Read session data from CSV file (skip first row)
 data_tab = csvread(filename_csv,1,0);
+
+% Fix probabilities
+data_tab(:,3) = round(data_tab(:,3)*1e4)/1e4;
+
+% Keep only up to a certain number of trials 
+% (specified as 'firstN' or 'firstNk'), with k multiplying by 1000
+idx = cellfun(@(x)strncmp(x,'first',5),data_modifiers);
+if any(idx)
+    modstring = data_modifiers{idx};
+    if modstring(end) == 'k'
+        nt = str2num(modstring(6:end-1))*1e3;
+    else
+        nt = str2num(modstring(6:end));
+    end
+    data_tab = data_tab(1:min(end,nt),:);
+end
 
 if any(cellfun(@(x)strcmp(x,'unbiased'),data_modifiers))
     % Remove biased trials

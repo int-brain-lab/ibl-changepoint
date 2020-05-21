@@ -16,12 +16,16 @@ if isempty(side) && nargout == 0
 
 elseif iscell(data)
     for iData = 1:numel(data)        
-        try
-            params = params_new('changepoint_runlength',data{iData});
+        try            
+            dataset = data{iData};
+            if ischar(dataset); dataset = read_data_from_csv(dataset); end
+            
+            params = params_new('changepoint_runlength',dataset);
             params.runlength_min = 1;            
-            [~,output] = changepoint_bayesian_nll(params,data{iData},1);
+%            params.runlength_min = 20;
+            [~,output] = changepoint_bayesian_nll(params,dataset,1);
             p_model = output.p_estimate;
-            [resp_match(iData,:),tot_resp(iData,:),model_match(iData,:)] = plot_reverse_bias(data{iData},side,false,p_model);        
+            [resp_match(iData,:),tot_resp(iData,:),model_match(iData,:)] = plot_reverse_bias(dataset,side,false,p_model);
         catch
             fprintf('Error with dataset %d, ignoring.\n',iData);
             resp_match(iData,:) = NaN(1,99);
@@ -152,7 +156,11 @@ if plotflag
     
     ylim([0 1]);
     set(gca,'YTick',[0,0.8,1]);
-    hl = legend(h,'Data','Model');
+    if params.runlength_min == 1
+        hl = legend(h,'Data','Model (no minimum block length)');        
+    else
+        hl = legend(h,'Data','Model');
+    end
     set(hl,'Location','NorthWest','Box','off','FontSize',fontsize);
     
 end

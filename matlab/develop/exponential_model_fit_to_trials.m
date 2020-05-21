@@ -1,4 +1,4 @@
-function [tau,beta] = exponential_model_fit_to_trials(data)
+function [tau,beta,tau0,beta0] = exponential_model_fit_to_trials(data)
 %EXPONENTIAL_MODEL_FIT_TO_TRIALS Fit exponential model to specific trials
 
 
@@ -7,12 +7,20 @@ if ~iscell(data); data = {data}; end
 
 for iData = 1:numel(data)
     try
-        [tau_hat,beta_hat] = exponential_model_fit(data{iData});
+        if ischar(data{iData})
+            dataset = read_data_from_csv(data{iData});
+        else
+            dataset = data{iData};
+        end
+        [tau_hat,beta_hat] = exponential_model_fit(dataset);
     catch
         tau_hat = NaN(1,size(tau,2)); beta_hat = NaN(1,size(beta,2));
     end
-    tau(iData,:) = tau_hat;
-    beta(iData,:) = beta_hat;
+    tau(iData,:) = tau_hat(1:end-1);
+    beta(iData,:) = beta_hat(1:end-1);
+    
+    tau0(iData) = tau_hat(end);
+    beta0(iData) = beta_hat(end);
 end
 
 % Make plots
@@ -139,6 +147,19 @@ for iiTrial = 1:20
     tau_hat(21 - iiTrial) = tau_grid(idx1);
     beta_hat(21 - iiTrial) = betahyp_grid(idx2);    
 end
+
+
+idx = biased_block;        
+KL = squeeze(sum(- p_model(idx).*log(q(idx,:,:)) ...
+    - (1 - p_model(idx)).*(log(1-q(idx,:,:))),1));
+
+[~,idx_best] = min(KL(:));
+
+idx1 = mod(idx_best-1,numel(tau_grid))+1;
+idx2 = floor((idx_best-1)./numel(tau_grid))+1;
+
+tau_hat(end+1) = tau_grid(idx1);
+beta_hat(end+1) = betahyp_grid(idx2);    
 
 
 

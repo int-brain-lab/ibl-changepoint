@@ -1,5 +1,12 @@
 function plot_exponential_quad(params)
 
+if nargin < 1 || isempty(params)
+    mice = get_mice_list(5);
+    for i = 1:numel(mice)
+        params{i} = load_model_fit(mice{i},'exponential_tauquad_contrastnoise');
+    end
+end
+
 fontsize = 18;
 axesfontsize = 14;
 

@@ -48,7 +48,9 @@ elseif isfield(params,'contrast_sigma')
     % Adjust zero-contrast to be equal
     sigma_vec(mu_vec == 0) = sqrt(0.5*(params.contrast_sigma(1)^2 + params.contrast_sigma(2)^2));
     
-    nf_vec = normcdf(1,mu_vec,sigma_vec) - normcdf(-1,mu_vec,sigma_vec);
+    max_contrast = max(1,max(contrasts_vec));
+    min_contrast = min(-1,-max(contrasts_vec));
+    nf_vec = normcdf(max_contrast,mu_vec,sigma_vec) - normcdf(min_contrast,mu_vec,sigma_vec);
 else
     mu_vec = repmat(data.mu(:),[1,numel(contrasts_vec)]);
 
@@ -196,7 +198,6 @@ end
 
 % PCHATL is a 2-D matrix representing P(resp = Left) for contrast level 
 % (rows) times log prior odds (columns)
-
 
 end
 
