@@ -37,6 +37,10 @@ switch id
             'ZM_2102_date20200219','ZM_2102_date20200220','ZM_2102_date20200221' ...
             };
         
+    case {'rnn','rylan'}
+        mice_list = {'MIT_001_first10k','MIT_001_first20k','MIT_001_first30k'};
+        
+        
     otherwise
         if ischar(id) && any(strcmp(id,all_mice))            
             mice_list{1} = id;      % Single mouse
