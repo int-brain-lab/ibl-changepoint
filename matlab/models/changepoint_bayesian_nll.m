@@ -5,6 +5,10 @@ function [nLL,output] = changepoint_bayesian_nll(params,data,pflag,debug_flag)
 % This is the corrected version (thanks to Charles Findling for finding a
 % bug with the previous implementation, and proposing a solution).
 %
+% Run with DEBUG_FLAG = 1 to use a (stochastic) particle filter 
+% implementation instead of the likelihood recursion inference algorithm
+% (should only be done for unit testing).
+%
 % Author:   Luigi Acerbi
 % Email:    luigi.acerbi@gmail.com
 % Date:     Dec/20/2020
@@ -179,12 +183,10 @@ end
 %--------------------------------------------------------------------------
 function [alpha_t,priorL,runlength_post,fullpost] = particlefilter(C,alpha_t,Tmat,H,p_vec,save_fullpost,pflag)
 
-NumTrials = size(C,1);      % # trials
-    
-priorL = zeros(NumTrials,1);      % Predictive prior over current Left
-
+NumTrials = size(C,1);          % # trials
+priorL = zeros(NumTrials,1);    % Predictive prior over current Left
 runlength_post = []; fullpost = [];
-Ns = 5e3;
+Ns = 5e3;                       % # Particles for particle filter
 
 % Sample initial state
 idx = catrnd(alpha_t(1,:),Ns);
@@ -194,29 +196,31 @@ X = [ones(Ns,1), idx(:)];
 
 for t = 1:NumTrials
     
+    % Block length transition
     change_idx = rand(Ns,1) <= H(X(:,1));
     X(change_idx,1) = 1;
     X(~change_idx,1) = X(~change_idx,1) + 1;
       
+    % Block transition if changepoint occurs (block length is 1)
     idx = find(change_idx);
     for i = 1:numel(idx)
         ii = catrnd(Tmat(X(idx(i),2),:),1);
         X(idx(i),2) = ii;        
     end
+
+    % Compute predictive prior
+    priorL(t) = sum(p_vec(X(:,2)))/Ns;
     
+    % Likelihood
     if C(t) == 1
         W = p_vec(X(:,2));
     else
         W = 1 - p_vec(X(:,2));
     end
-    
-    priorL(t) = sum(p_vec(X(:,2)))/Ns;
-    
+            
     % Resample    
-    idx = catrnd(W,Ns);
-    
-    X = X(idx,:);
-    
+    idx = catrnd(W,Ns);    
+    X = X(idx,:);    
 end
 
 
