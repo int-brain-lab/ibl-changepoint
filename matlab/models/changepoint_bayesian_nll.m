@@ -85,7 +85,7 @@ rlprior(1:floor(runlength_min)-1) = 0;
 
 % Trick to allow non-integer run length min and max
 frac_min = 1 - (runlength_min - floor(runlength_min));
-rlprior(floor(frac_min)) = rlprior(floor(frac_min))*frac_min;
+rlprior(floor(runlength_min)) = rlprior(floor(runlength_min))*frac_min;
 frac_max = 1 - (ceil(runlength_max) - runlength_max);
 rlprior(end) = rlprior(end)*frac_max;
 
