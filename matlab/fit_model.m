@@ -263,9 +263,18 @@ if vbmc_flag
             continue;
         end
         
-        [vp,~,~,~,output] = ...
-            vbmc(@(x_) -sum(nllfun(x_,params,data))+logprior(x_), ...
-            x0,bounds.LB,bounds.UB,bounds.PLB,bounds.PUB,vbmc_opts);
+        Ntry = 3;   % Try up to three times in case of crashes
+        for iTry = 1:Ntry
+            try
+                [vp,~,~,~,output] = ...
+                    vbmc(@(x_) -sum(nllfun(x_,params,data))+logprior(x_), ...
+                    x0,bounds.LB,bounds.UB,bounds.PLB,bounds.PUB,vbmc_opts);
+                break;
+            catch
+                % If it crashes, try again...
+                warning('VBMC crashed! Trying again...');
+            end
+        end
 
         % Store results
         params.vbmc_fits.vp{iOpt} = vp;
