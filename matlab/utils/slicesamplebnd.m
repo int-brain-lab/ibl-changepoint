@@ -255,16 +255,6 @@ for ii = 1:(effN+burn)
         
         % Adjust interval to outside bounds for bounded problems
         if isfinite(LB(dd)) || isfinite(UB(dd))        
-            if x_l(dd) < LB_out(dd)
-                delta = LB_out(dd) - x_l(dd);
-                x_l(dd) = x_l(dd) + delta;
-                x_r(dd) = x_r(dd) + delta;
-            end
-            if x_r(dd) > UB_out(dd)
-                delta = x_r(dd) - UB_out(dd);
-                x_l(dd) = x_l(dd) - delta;
-                x_r(dd) = x_r(dd) - delta;
-            end
             x_l(dd) = max(x_l(dd),LB_out(dd));
             x_r(dd) = min(x_r(dd),UB_out(dd));
         end

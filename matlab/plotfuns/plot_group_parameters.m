@@ -8,7 +8,7 @@ axesfontsize = 14;
 true_values = [60 20 0.2 0.8];
 
 nbins = 50;
-xmax = [30,20,1,1];
+xmax = [120,60,1,1];
 
 xx{1} = linspace(1,xmax(1),min(xmax(1),nbins));
 xx{2} = linspace(1,xmax(2),min(xmax(2),nbins));
@@ -31,10 +31,10 @@ end
 figure(1);
 for iParam = 1:Np
     subplot(2,2,iParam);
-    hist(tt(:,iParam),xx{iParam});
-    h = findobj(gca,'Type','patch');
-    h(1).FaceColor = [0 0.5 0.5];
-    h(1).EdgeColor = 'w';
+    histogram(tt(:,iParam),xx{iParam});
+    %h = findobj(gca,'Type','patch');
+    %h(1).FaceColor = [0 0.5 0.5];
+    %h(1).EdgeColor = 'w';
     box off;
     
     xtext = params_list{iParam};

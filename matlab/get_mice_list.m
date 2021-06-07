@@ -37,6 +37,9 @@ switch id
             'ZM_2102_date20200219','ZM_2102_date20200220','ZM_2102_date20200221' ...
             };
         
+    case {'charles'}
+        mice_list = {'CSHL045', 'CSHL047', 'CSHL049', 'CSHL051', 'CSHL052', 'CSHL053', 'CSHL054', 'CSHL055', 'CSHL058', 'CSHL059', 'CSHL_005', 'CSHL_007', 'CSH_ZAD_001', 'CSH_ZAD_011', 'CSH_ZAD_019', 'CSH_ZAD_022', 'CSH_ZAD_025', 'CSH_ZAD_026', 'CSH_ZAD_029', 'DY_008', 'DY_009', 'DY_010', 'DY_011', 'DY_013', 'DY_014', 'DY_016', 'DY_018', 'DY_020', 'IBL-T1', 'IBL-T4', 'KS020', 'NYU-11', 'NYU-12', 'SWC_015', 'SWC_038', 'SWC_042', 'SWC_052', 'SWC_054', 'ZM_1897', 'ZM_2240', 'ZM_2241', 'ZM_2245', 'ZM_3003', 'ibl_witten_04', 'ibl_witten_05', 'ibl_witten_13', 'ibl_witten_14'};
+        
     case {'rnn','rylan'}
         mice_list = {'MIT_001_first10k','MIT_001_first20k','MIT_001_first30k'};
         
